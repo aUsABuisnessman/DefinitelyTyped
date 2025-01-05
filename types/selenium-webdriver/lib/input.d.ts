@@ -1,5 +1,5 @@
-import { ILocation, WebDriver, WebElement } from '../';
-import { Executor } from './command';
+import { WebDriver, WebElement } from "../";
+import { Executor } from "./command";
 
 /**
  * Defines the reference point from which to compute offsets for
@@ -7,9 +7,9 @@ import { Executor } from './command';
  */
 export enum Origin {
     /** Compute offsets relative to the pointer's current position. */
-    POINTER = 'pointer',
+    POINTER = "pointer",
     /** Compute offsets relative to the viewport. */
-    VIEWPORT = 'viewport',
+    VIEWPORT = "viewport",
 }
 
 /**
@@ -105,8 +105,6 @@ export interface IKey {
  * Representations of pressable keys that aren't text.  These are stored in
  * the Unicode PUA (Private Use Area) code points, 0xE000-0xF8FF.  Refer to
  * http://www.google.com.au/search?&q=unicode+pua&btnG=Search
- *
- * @enum {string}
  */
 export const Key: IKey;
 
@@ -118,6 +116,38 @@ export interface IDirection {
 }
 
 export const INTERNAL_COMPUTE_OFFSET_SCRIPT: string;
+
+/**
+ * Used with {@link ./webelement.WebElement#sendKeys WebElement#sendKeys} on
+ * file input elements (`<input type="file">`) to detect when the entered key
+ * sequence defines the path to a file.
+ *
+ * By default, {@linkplain ./webelement.WebElement WebElement's} will enter all
+ * key sequences exactly as entered. You may set a
+ * {@linkplain ./webdriver.WebDriver#setFileDetector file detector} on the
+ * parent WebDriver instance to define custom behavior for handling file
+ * elements. Of particular note is the
+ * {@link selenium-webdriver/remote.FileDetector}, which should be used when
+ * running against a remote
+ * [Selenium Server](https://selenium.dev/downloads/).
+ */
+export class FileDetector {
+    /**
+     * Handles the file specified by the given path, preparing it for use with
+     * the current browser. If the path does not refer to a valid file, it will
+     * be returned unchanged, otherwise a path suitable for use with the current
+     * browser will be returned.
+     *
+     * This default implementation is a no-op. Subtypes may override this function
+     * for custom tailored file handling.
+     *
+     * @param {!./webdriver.WebDriver} driver The driver for the current browser.
+     * @param {string} path The path to process.
+     * @return {!Promise<string>} A promise for the processed file path.
+     * @package
+     */
+    handleFile(driver: WebDriver, path: string): Promise<string>;
+}
 
 export class Device {
     constructor(type: string, id: string);
@@ -139,7 +169,6 @@ export class Keyboard extends Device {}
  *         dragAndDrop(element3, element4).
  *         keyUp(Key.SHIFT).
  *         perform();
- *
  */
 export class Actions {
     // region Constructors
@@ -198,71 +227,6 @@ export class Actions {
      *     corner of the viewport over 100ms.
      */
     move(direction: IDirection): Actions;
-
-    /**
-     * Moves the mouse.  The location to move to may be specified in terms of the
-     * mouse's current location, an offset relative to the top-left corner of an
-     * element, or an element (in which case the middle of the element is used).
-     *
-     * @param {(!./WebElement|{x: number, y: number})} location The
-     *     location to drag to, as either another WebElement or an offset in
-     *     pixels.
-     * @param {{x: number, y: number}=} opt_offset If the target {@code location}
-     *     is defined as a {@link ./WebElement}, this parameter defines
-     *     an offset within that element. The offset should be specified in pixels
-     *     relative to the top-left corner of the element's bounding box. If
-     *     omitted, the element's center will be used as the target offset.
-     * @return {!Actions} A self reference.
-     */
-    mouseMove(location: WebElement | ILocation, opt_offset?: ILocation): Actions;
-
-    /**
-     * Presses a mouse button. The mouse button will not be released until
-     * {@link #mouseUp} is called, regardless of whether that call is made in this
-     * sequence or another. The behavior for out-of-order events (e.g. mouseDown,
-     * click) is undefined.
-     *
-     * If an element is provided, the mouse will first be moved to the center
-     * of that element. This is equivalent to:
-     *
-     *     sequence.mouseMove(element).mouseDown()
-     *
-     * Warning: this method currently only supports the left mouse button. See
-     * [issue 4047](http://code.google.com/p/selenium/issues/detail?id=4047).
-     *
-     * @param {(./WebElement|input.Button)=} opt_elementOrButton Either
-     *     the element to interact with or the button to click with.
-     *     Defaults to {@link input.Button.LEFT} if neither an element nor
-     *     button is specified.
-     * @param {input.Button=} opt_button The button to use. Defaults to
-     *     {@link input.Button.LEFT}. Ignored if a button is provided as the
-     *     first argument.
-     * @return {!Actions} A self reference.
-     */
-    mouseDown(opt_elementOrButton?: WebElement | string, opt_button?: string): Actions;
-
-    /**
-     * Releases a mouse button. Behavior is undefined for calling this function
-     * without a previous call to {@link #mouseDown}.
-     *
-     * If an element is provided, the mouse will first be moved to the center
-     * of that element. This is equivalent to:
-     *
-     *     sequence.mouseMove(element).mouseUp()
-     *
-     * Warning: this method currently only supports the left mouse button. See
-     * [issue 4047](http://code.google.com/p/selenium/issues/detail?id=4047).
-     *
-     * @param {(./WebElement|input.Button)=} opt_elementOrButton Either
-     *     the element to interact with or the button to click with.
-     *     Defaults to {@link input.Button.LEFT} if neither an element nor
-     *     button is specified.
-     * @param {input.Button=} opt_button The button to use. Defaults to
-     *     {@link input.Button.LEFT}. Ignored if a button is provided as the
-     *     first argument.
-     * @return {!Actions} A self reference.
-     */
-    mouseUp(opt_elementOrButton?: WebElement | string, opt_button?: string): Actions;
 
     /**
      * Convenience function for performing a 'drag and drop' manuever. The target

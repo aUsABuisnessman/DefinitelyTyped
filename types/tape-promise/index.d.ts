@@ -1,17 +1,11 @@
-// Type definitions for tape-promise 4.0
-// Project: https://github.com/jprichardson/tape-promise#readme
-// Definitions by: ExE Boss <https://github.com/ExE-Boss>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-import tape = require('tape');
-import { TestOptions, StreamOptions } from 'tape';
-export { TestOptions, StreamOptions };
+import tape = require("tape");
+import { StreamOptions, TestOptions } from "tape";
+export { StreamOptions, TestOptions };
 
 export interface TestCase {
     (test: Test): void | PromiseLike<void>;
 }
 
-// tslint:disable: ban-types
 export interface Test extends tape.Test {
     test(name: string, cb: TestCase): void;
     test(name: string, opts: TestOptions, cb: TestCase): void;
@@ -24,7 +18,7 @@ export interface Test extends tape.Test {
     rejects(promise: PromiseLike<any> | (() => PromiseLike<any>), msg?: string): Promise<void>;
     rejects(
         promise: PromiseLike<any> | (() => PromiseLike<any>),
-        expected?: RegExp | Function,
+        expected?: RegExp | Function, // eslint-disable-line @typescript-eslint/no-unsafe-function-type
         msg?: string,
     ): Promise<void>;
 
@@ -34,11 +28,10 @@ export interface Test extends tape.Test {
     doesNotReject(promise: PromiseLike<any> | (() => PromiseLike<any>), msg?: string): Promise<void>;
     doesNotReject(
         promise: PromiseLike<any> | (() => PromiseLike<any>),
-        expected?: RegExp | Function,
+        expected?: RegExp | Function, // eslint-disable-line @typescript-eslint/no-unsafe-function-type
         msg?: string,
     ): Promise<void>;
 }
-// tslint:enable: ban-types
 
 // tslint:disable: unified-signatures
 interface AsyncTapeFunction {

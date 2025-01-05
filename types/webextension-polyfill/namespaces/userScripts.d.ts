@@ -1,17 +1,13 @@
-/**
- * Namespace: browser.userScripts
- * Generated from Mozilla sources. Do not manually edit!
- *
- * Permissions: "manifest:user_scripts"
- *
- * Comments found in source JSON schema files:
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
+//////////////////////////////////////////////////////
+// BEWARE: DO NOT EDIT MANUALLY! Changes will be lost!
+//////////////////////////////////////////////////////
+
 import { ExtensionTypes } from "./extensionTypes";
 import { Manifest } from "./manifest";
 
+/**
+ * Namespace: browser.userScripts
+ */
 export namespace UserScripts {
     /**
      * Details of a user script
@@ -86,8 +82,6 @@ export namespace UserScripts {
         /**
          * Register a user script programmatically given its $(ref:userScripts.UserScriptOptions),
          * and resolves to a $(ref:userScripts.RegisteredUserScript) instance
-         *
-         * @param userScriptOptions
          */
         register(userScriptOptions: UserScriptOptions): void;
     }

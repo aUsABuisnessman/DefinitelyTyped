@@ -1,9 +1,3 @@
-// Type definitions for Minecraft Bedrock Edition script APIs (experimental) 0.1
-// Project: https://docs.microsoft.com/minecraft/creator/
-// Definitions by: Jake Shirley <https://github.com/JakeShirley>
-//                 Mike Ammerlaan <https://github.com/mammerla>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /* *****************************************************************************
    Copyright (c) Microsoft Corporation.
    ***************************************************************************** */
@@ -16,34 +10,11 @@
  * {
  *   // mojang-gametest
  *   "uuid": "6f4b6893-1bb6-42fd-b458-7fa3d0c89616",
- *   "version": [ 0, 1, 0 ]
+ *   "version": "1.0.0-beta"
  * }
  * ```
- *
  */
-import * as mojangminecraft from 'mojang-minecraft';
-/**
- * Represents the type of fluid for use within a fluid
- * containing block, like a cauldron.
- */
-export enum FluidType {
-    /**
-     * Represents water as a type of fluida.
-     */
-    water = 0,
-    /**
-     * Represents lava as a type of fluid.
-     */
-    lava = 1,
-    /**
-     * Represents powder snow as a type of fluid.
-     */
-    powderSnow = 2,
-    /**
-     * Represents a potion as a type of fluid.
-     */
-    potion = 3,
-}
+import * as mojangminecraft from "mojang-minecraft";
 /**
  * Returns information about whether this fence is connected to
  * other fences in several directions.
@@ -53,22 +24,22 @@ export class FenceConnectivity {
      * Represents whether this fence block is connected to another
      * fence to the east (x + 1).
      */
-    readonly 'east': boolean;
+    readonly "east": boolean;
     /**
      * Represents whether this fence block is connected to another
      * fence to the north (z - 1).
      */
-    readonly 'north': boolean;
+    readonly "north": boolean;
     /**
      * Represents whether this fence block is connected to another
      * fence to the south (z + 1).
      */
-    readonly 'south': boolean;
+    readonly "south": boolean;
     /**
      * Represents whether this fence block is connected to another
      * fence to the west (x - 1).
      */
-    readonly 'west': boolean;
+    readonly "west": boolean;
     protected constructor();
 }
 /**
@@ -185,7 +156,7 @@ export class RegistrationBuilder {
      * RegistrationBuilder object where additional configuration
      * methods can be called.
      */
-    batch(batchName: 'night' | 'day'): RegistrationBuilder;
+    batch(batchName: "night" | "day"): RegistrationBuilder;
     /**
      * @remarks
      * Sets the maximum number of times a test will try to rerun if
@@ -290,7 +261,7 @@ export class SculkSpreader {
      * Gets the maximum charge of a sculk spreader.
      * @throws This property can throw when used.
      */
-    readonly 'maxCharge': number;
+    readonly "maxCharge": number;
     /**
      * @remarks
      * Adds a cursor - which is a notional waypoint that the sculk
@@ -332,81 +303,81 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * Dimension that the simulated player is currently within.
      * @throws This property can throw when used.
      */
-    readonly 'dimension': mojangminecraft.Dimension;
+    readonly "dimension": mojangminecraft.Dimension;
     /**
      * Location of the center of the head component of the player.
      * @throws This property can throw when used.
      */
-    readonly 'headLocation': mojangminecraft.Location;
+    readonly "headLocation": mojangminecraft.Location;
     /**
      * Rotation of the head across pitch and yaw angles.
      * @throws This property can throw when used.
      */
-    readonly 'headRotation': mojangminecraft.XYRotation;
+    readonly "headRotation": mojangminecraft.XYRotation;
     /**
      * Identifier for the player.
      * @throws This property can throw when used.
      */
-    readonly 'id': string;
+    readonly "id": string;
     /**
      * True if the player is currently using a sneaking movement.
      */
-    'isSneaking': boolean;
+    "isSneaking": boolean;
     /**
      * Current location of the player.
      * @throws This property can throw when used.
      */
-    readonly 'location': mojangminecraft.Location;
+    readonly "location": mojangminecraft.Location;
     /**
      * Name of the player.
      * @throws This property can throw when used.
      */
-    readonly 'name': string;
+    readonly "name": string;
     /**
      * Optional name tag of the player.
      */
-    'nameTag': string;
+    "nameTag": string;
     /**
      * Contains methods for manipulating the on-screen display of a
      * Player.
      */
-    readonly 'onScreenDisplay': mojangminecraft.ScreenDisplay;
+    readonly "onScreenDisplay": mojangminecraft.ScreenDisplay;
     /**
      * Main rotation of the entity.
      * @throws This property can throw when used.
      */
-    readonly 'rotation': mojangminecraft.XYRotation;
+    readonly "rotation": mojangminecraft.XYRotation;
     /**
      * Returns a scoreboard identity that represents this entity.
      * @throws This property can throw when used.
      */
-    readonly 'scoreboard': mojangminecraft.ScoreboardIdentity;
+    readonly "scoreboard": mojangminecraft.ScoreboardIdentity;
     /**
      * Manages the selected slot in the player's hotbar.
      */
-    'selectedSlot': number;
+    "selectedSlot": number;
     /**
      * Retrieves or sets an entity that is used as the target of
      * AI-related behaviors, like attacking.
      */
-    'target': mojangminecraft.Entity;
+    "target": mojangminecraft.Entity;
     /**
      * Current speed of the player across X, Y, and Z dimensions.
      * @throws This property can throw when used.
      */
-    readonly 'velocity': mojangminecraft.Vector;
+    readonly "velocity": mojangminecraft.Vector;
     /**
      * Vector of the current view of the player.
      * @throws This property can throw when used.
      */
-    readonly 'viewVector': mojangminecraft.Vector;
+    readonly "viewVector": mojangminecraft.Vector;
     /**
      * @remarks
      * Adds an effect, like poison, to the entity.
      * @param effectType
      * Type of effect to add to the entity.
      * @param duration
-     * Amount of time, in seconds, for the effect to apply.
+     * Amount of time, in ticks, for the effect to apply.
      * @param amplifier
      * Optional amplification of the effect to apply.
      * @param showParticles
@@ -459,7 +430,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * Direction to place the specified item within.
      * @throws This function can throw errors.
      */
-    breakBlock(blockLocation: mojangminecraft.BlockLocation, direction?: number): boolean;
+    breakBlock(blockLocation: mojangminecraft.BlockLocation, direction?: mojangminecraft.Direction): boolean;
     /**
      * @remarks
      * Gets the first block that intersects with the vector of the
@@ -579,7 +550,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * Direction to place the specified item within.
      * @throws This function can throw errors.
      */
-    interactWithBlock(blockLocation: mojangminecraft.BlockLocation, direction?: number): boolean;
+    interactWithBlock(blockLocation: mojangminecraft.BlockLocation, direction?: mojangminecraft.Direction): boolean;
     /**
      * @remarks
      * Causes the simulated player to interact with a mob. Returns
@@ -727,6 +698,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * @throws This function can throw errors.
      */
     playSound(soundID: string, soundOptions?: mojangminecraft.SoundOptions): void;
+    postClientMessage(id: string, value: string): void;
     /**
      * @remarks
      * Removes a specified property.
@@ -837,7 +809,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * X/Y/Z components of the velocity.
      * @throws This function can throw errors.
      */
-    setVelocity(velocity: mojangminecraft.Vector): void;
+    setVelocity(velocity: mojangminecraft.Vector3): void;
     /**
      * @remarks
      * Sets the item cooldown time for a particular cooldown
@@ -886,13 +858,15 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * X rotation of the player after teleportation.
      * @param yRotation
      * Y rotation of the player after teleportation.
+     * @param keepVelocity
      * @throws This function can throw errors.
      */
     teleport(
-        location: mojangminecraft.Location,
+        location: mojangminecraft.Vector3,
         dimension: mojangminecraft.Dimension,
         xRotation: number,
         yRotation: number,
+        keepVelocity?: boolean,
     ): void;
     /**
      * @remarks
@@ -904,13 +878,23 @@ export class SimulatedPlayer extends mojangminecraft.Player {
      * Dimension to move the selected player to.
      * @param facingLocation
      * Location that this player will be facing.
+     * @param keepVelocity
      * @throws This function can throw errors.
      */
     teleportFacing(
-        location: mojangminecraft.Location,
+        location: mojangminecraft.Vector3,
         dimension: mojangminecraft.Dimension,
-        facingLocation: mojangminecraft.Location,
+        facingLocation: mojangminecraft.Vector3,
+        keepVelocity?: boolean,
     ): void;
+    /**
+     * @remarks
+     * For simulated players, this API is effectively a no-op as
+     * simulated players do not have a connected client.
+     * @param message
+     * @throws This function can throw errors.
+     */
+    tell(message: mojangminecraft.RawMessage | string): void;
     /**
      * @remarks
      * Triggers an entity type event. For every entity, a number of
@@ -961,7 +945,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
     useItemInSlotOnBlock(
         slot: number,
         blockLocation: mojangminecraft.BlockLocation,
-        direction?: number,
+        direction?: mojangminecraft.Direction,
         faceLocationX?: number,
         faceLocationY?: number,
     ): boolean;
@@ -985,7 +969,7 @@ export class SimulatedPlayer extends mojangminecraft.Player {
     useItemOnBlock(
         itemStack: mojangminecraft.ItemStack,
         blockLocation: mojangminecraft.BlockLocation,
-        direction?: number,
+        direction?: mojangminecraft.Direction,
         faceLocationX?: number,
         faceLocationY?: number,
     ): boolean;
@@ -1001,22 +985,22 @@ export class Tags {
      * Indicates that the tagged test should be a part of all
      * suites.
      */
-    static readonly 'suiteAll' = 'suite:all';
+    static readonly "suiteAll" = "suite:all";
     /**
      * Indicates that the tagged test should be a part of an
      * internal (debug) test suite.
      */
-    static readonly 'suiteDebug' = 'suite:debug';
+    static readonly "suiteDebug" = "suite:debug";
     /**
      * Indicates that the tagged test should be a part of the
      * default test suite.
      */
-    static readonly 'suiteDefault' = 'suite:default';
+    static readonly "suiteDefault" = "suite:default";
     /**
      * Indicates that the tagged test should be a part of a suite
      * of disabled tests.
      */
-    static readonly 'suiteDisabled' = 'suite:disabled';
+    static readonly "suiteDisabled" = "suite:disabled";
     protected constructor();
 }
 /**
@@ -1071,8 +1055,9 @@ export class Test {
      * @example testIfButtonNotPressed.js
      * ```typescript
      *        test.assertBlockState(buttonPos, (block) => {
-     *          return block.getBlockData().getProperty("button_pressed_bit") == 0;
+     *          return block.permutation.getProperty("button_pressed_bit") == 0;
      *        });
+     *
      * ```
      */
     assertBlockState(
@@ -1614,7 +1599,7 @@ export class Test {
      * list of values.
      * @throws This function can throw errors.
      */
-    setFluidContainer(location: mojangminecraft.BlockLocation, type: number): void;
+    setFluidContainer(location: mojangminecraft.BlockLocation, type: mojangminecraft.FluidType): void;
     /**
      * @remarks
      * Sets the fuse of an explodable entity.

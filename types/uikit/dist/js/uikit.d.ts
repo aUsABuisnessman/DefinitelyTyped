@@ -30,6 +30,7 @@ export namespace UIkit {
         targets?: string | undefined;
         toggle?: string | undefined;
         transition?: string | undefined;
+        offset?: number | undefined;
     }
 
     interface UIkitAccordionElement {
@@ -41,7 +42,7 @@ export namespace UIkit {
     interface UIkitAlertOptions {
         animation?: boolean | string | undefined;
         duration?: number | undefined;
-        'sel-close'?: string | undefined;
+        "sel-close"?: string | undefined;
     }
 
     interface UIkitAlertElement {
@@ -62,10 +63,11 @@ export namespace UIkit {
         toggle?: string | boolean | undefined;
         pos?: string | undefined;
         mode?: string | undefined;
-        'delay-show'?: number | undefined;
-        'delay-hide'?: number | undefined;
+        "delay-show"?: number | undefined;
+        "delay-hide"?: number | undefined;
+        display?: "dynamic" | "static" | undefined;
         boundary?: string | undefined;
-        'boundary-align'?: boolean | undefined;
+        "boundary-align"?: boolean | undefined;
         flip?: boolean | string | undefined;
         offset?: number | undefined;
         animation?: string | undefined;
@@ -74,7 +76,7 @@ export namespace UIkit {
 
     interface UIkitDropElement {
         show(): void;
-        hide(): void;
+        hide(delay?: boolean): void;
     }
 
     type Drop = (element: UIkitElement, options?: UIkitDropOptions) => UIkitDropElement;
@@ -83,10 +85,10 @@ export namespace UIkit {
         toggle?: string | boolean | undefined;
         pos?: string | undefined;
         mode?: string | undefined;
-        'delay-show'?: number | undefined;
-        'delay-hide'?: number | undefined;
+        "delay-show"?: number | undefined;
+        "delay-hide"?: number | undefined;
         boundary?: string | undefined;
-        'boundary-align'?: boolean | undefined;
+        "boundary-align"?: boolean | undefined;
         flip?: boolean | string | undefined;
         offset?: number | undefined;
         animation?: string | undefined;
@@ -95,7 +97,7 @@ export namespace UIkit {
 
     interface UIkitDropdownElement {
         show(): void;
-        hide(): void;
+        hide(delay?: boolean): void;
     }
 
     type Dropdown = (element: UIkitElement, options?: UIkitDropdownOptions) => UIkitDropdownElement;
@@ -108,7 +110,7 @@ export namespace UIkit {
 
     interface UIkitGridOptions {
         margin?: string | undefined;
-        'first-column'?: string | undefined;
+        "first-column"?: string | undefined;
         masonry?: boolean | undefined;
         parallax?: number | undefined;
     }
@@ -122,17 +124,27 @@ export namespace UIkit {
 
     type HeightMatch = (element: UIkitElement, options?: UIkitHeightMatchOptions) => void;
 
+    interface UIkitHeightViewportOptions {
+        offsetTop?: boolean | string | undefined;
+        offsetBottom?: boolean | number | string | undefined;
+        expand?: boolean | undefined;
+        minHeight?: number | undefined;
+    }
+
+    type HeightViewport = (element: UIkitElement, options?: UIkitHeightViewportOptions) => void;
+
     interface UIkitIconOptions {
         icon?: string | undefined;
         ratio?: number | undefined;
     }
 
-    type Icon = (
-        element: UIkitElement,
-        options?: UIkitIconOptions,
-    ) => {
-        svg: Promise<any>;
-    };
+    interface Icon {
+        (element: UIkitElement, options?: UIkitIconOptions): {
+            svg: Promise<any>;
+        };
+        add(name: string, svg: string): void;
+        add(contents: { [key: string]: string }): void;
+    }
 
     interface UIkitImageOptions {
         dataSrc?: string | undefined;
@@ -156,19 +168,19 @@ export namespace UIkit {
 
     interface UIkitMarginOptions {
         margin?: string | undefined;
-        'first-column'?: string | undefined;
+        "first-column"?: string | undefined;
     }
 
     type Margin = (element: UIkitElement, options?: UIkitMarginOptions) => void;
 
     interface UIkitModalOptions {
-        'esc-close'?: boolean | undefined;
-        'bg-close'?: boolean | undefined;
+        "esc-close"?: boolean | undefined;
+        "bg-close"?: boolean | undefined;
         stack?: boolean | undefined;
         container?: string | boolean | undefined;
-        'cls-page'?: string | undefined;
-        'cls-panel'?: string | undefined;
-        'sel-close'?: string | undefined;
+        "cls-page"?: string | undefined;
+        "cls-panel"?: string | undefined;
+        "sel-close"?: string | undefined;
     }
 
     interface UIkitModalElement {
@@ -200,8 +212,7 @@ export namespace UIkit {
     }
 
     interface UIkitNavElement {
-        index: string | number | UIkitNode;
-        animate: boolean;
+        toggle(index: string | number | UIkitNode, animate: boolean): void;
     }
 
     type Nav = (element: UIkitElement, options?: UIkitNavOptions) => UIkitNavElement;
@@ -209,13 +220,13 @@ export namespace UIkit {
     interface UIkitNavbarOptions {
         align?: string | undefined;
         mode?: string | undefined;
-        'delay-show'?: number | undefined;
-        'delay-hide'?: number | undefined;
+        "delay-show"?: number | undefined;
+        "delay-hide"?: number | undefined;
         boundary?: string | undefined;
-        'boundary-align'?: boolean | undefined;
+        "boundary-align"?: boolean | undefined;
         offset?: number | undefined;
         dropbar?: boolean | undefined;
-        'dropbar-mode'?: string | undefined;
+        "dropbar-mode"?: string | undefined;
         duration?: number | undefined;
     }
 
@@ -225,8 +236,8 @@ export namespace UIkit {
         mode?: string | undefined;
         flip?: boolean | undefined;
         overlay?: boolean | undefined;
-        'esc-close'?: boolean | undefined;
-        'bg-close'?: boolean | undefined;
+        "esc-close"?: boolean | undefined;
+        "bg-close"?: boolean | undefined;
         container?: string | boolean | undefined;
     }
 
@@ -238,7 +249,6 @@ export namespace UIkit {
     type Offcanvas = (element: UIkitElement, options?: UIkitOffcanvasOptions) => UIkitOffcanvasElement;
 
     interface UIkitScrollOptions {
-        duration?: number | undefined;
         offset?: number | undefined;
     }
 
@@ -251,8 +261,8 @@ export namespace UIkit {
     interface UIkitScrollspyOptions {
         cls?: string | undefined;
         hidden?: boolean | undefined;
-        'offset-top'?: number | undefined;
-        'offset-left'?: number | undefined;
+        "offset-top"?: number | undefined;
+        "offset-left"?: number | undefined;
         repeat?: boolean | undefined;
         delay?: number | undefined;
     }
@@ -269,23 +279,25 @@ export namespace UIkit {
     type ScrollspyNav = (element: UIkitElement, options?: UIkitScrollspyNavOptions) => void;
 
     interface UIkitStickyOptions {
-        top?: number | string | undefined;
-        bottom?: boolean | string | undefined;
+        position?: "top" | "bottom" | undefined;
+        start?: number | string | undefined;
+        end?: boolean | number | string | undefined;
         offset?: number | string | undefined;
+        "overflow-flip"?: boolean | undefined;
         animation?: string | boolean | undefined;
-        'cls-active'?: string | undefined;
-        'cls-inactive'?: string | undefined;
-        'width-element'?: string | boolean | undefined;
-        'show-on-up'?: boolean | undefined;
+        "cls-active"?: string | undefined;
+        "cls-inactive"?: string | undefined;
+        "width-element"?: string | boolean | undefined;
+        "show-on-up"?: boolean | undefined;
         media?: number | string | boolean | undefined;
-        'target-offset'?: boolean | number | undefined;
+        "target-offset"?: boolean | number | undefined;
     }
 
     type Sticky = (element: UIkitElement, options?: UIkitStickyOptions) => void;
 
     interface UIkitSvgOptions {
         src?: string | undefined;
-        'stroke-animation'?: boolean | undefined;
+        "stroke-animation"?: boolean | undefined;
     }
 
     type Svg = (
@@ -298,6 +310,7 @@ export namespace UIkit {
     interface UIkitSwitcherOptions {
         connect?: string | undefined;
         toggle?: string | undefined;
+        itemNav?: string | undefined;
         active?: number | undefined;
         animation?: string | undefined;
         duration?: number | undefined;
@@ -374,6 +387,8 @@ export namespace UIkit {
     interface UIkitFilterOptions {
         target?: string | undefined;
         selActive?: string | boolean | undefined;
+        animation?: "slide" | "fade" | "delayed-fade" | false | undefined;
+        duration?: number | undefined;
     }
 
     type Filter = (element: UIkitElement, options?: UIkitFilterOptions) => void;
@@ -381,15 +396,16 @@ export namespace UIkit {
     interface UIkitLightboxPanelOptions {
         animation?: string | undefined;
         autoplay?: boolean | undefined;
-        'autoplay-interval'?: number | undefined;
-        'pause-on-hover'?: boolean | undefined;
-        'video-autoplay'?: boolean | undefined;
+        "autoplay-interval"?: number | undefined;
+        "pause-on-hover"?: boolean | undefined;
+        "video-autoplay"?: boolean | undefined;
         index?: number | undefined;
         velocity?: number | undefined;
         preload?: number | undefined;
         items?: object[] | undefined;
         template?: string | undefined;
-        'delay-controls'?: number | undefined;
+        "delay-controls"?: number | undefined;
+        container?: string | undefined;
     }
 
     interface UIkitLightboxPanelElement {
@@ -406,9 +422,9 @@ export namespace UIkit {
     interface UIkitLightboxOptions {
         animation?: string | undefined;
         autoplay?: number | undefined;
-        'autoplay-interval'?: number | undefined;
-        'pause-on-hover'?: boolean | undefined;
-        'video-autoplay'?: boolean | undefined;
+        "autoplay-interval"?: number | undefined;
+        "pause-on-hover"?: boolean | undefined;
+        "video-autoplay"?: boolean | undefined;
         index?: string | undefined;
         toggle?: string | undefined;
     }
@@ -421,10 +437,10 @@ export namespace UIkit {
     type Lightbox = (element: UIkitElement, options?: UIkitLightboxOptions) => UIkitLightboxElement;
     interface UIkitNotificationOptions {
         message?: string | undefined;
-        status?: 'primary' | 'success' | 'warning' | 'danger' | undefined;
+        status?: "primary" | "success" | "warning" | "danger" | undefined;
         timeout?: number | undefined;
         group?: string | undefined;
-        pos?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | undefined;
+        pos?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" | undefined;
     }
 
     interface UIkitNotificationElement {
@@ -439,7 +455,8 @@ export namespace UIkit {
     interface UIkitParallaxOptions {
         easing?: number | undefined;
         target?: string | undefined;
-        viewport?: number | undefined;
+        start?: number | string | undefined;
+        end?: number | string | undefined;
         media?: number | string | undefined;
     }
 
@@ -447,13 +464,13 @@ export namespace UIkit {
 
     interface UIkitSliderOptions {
         autoplay?: boolean | undefined;
-        'autoplay-interval'?: number | undefined;
+        "autoplay-interval"?: number | undefined;
         center?: boolean | undefined;
         draggable?: boolean | undefined;
         easing?: string | undefined;
         finite?: boolean | undefined;
         index?: number | undefined;
-        'pause-on-hover'?: boolean | undefined;
+        "pause-on-hover"?: boolean | undefined;
         sets?: boolean | undefined;
         velocity?: number | undefined;
     }
@@ -469,16 +486,16 @@ export namespace UIkit {
     interface UIkitSlideshowOptions {
         animation?: string | undefined;
         autoplay?: boolean | undefined;
-        'autoplay-interval'?: number | undefined;
+        "autoplay-interval"?: number | undefined;
         draggable?: boolean | undefined;
         easing?: string | undefined;
         finite?: boolean | undefined;
-        'pause-on-hover'?: boolean | undefined;
+        "pause-on-hover"?: boolean | undefined;
         index?: number | undefined;
         velocity?: number | undefined;
         ratio?: string | number | undefined;
-        'min-height'?: boolean | number | undefined;
-        'max-height'?: boolean | number | undefined;
+        "min-height"?: boolean | number | undefined;
+        "max-height"?: boolean | number | undefined;
     }
 
     interface UIkitSlidershowElement {
@@ -492,15 +509,16 @@ export namespace UIkit {
     interface UIkitSortableOptions {
         group?: string | undefined;
         animation?: number | undefined;
+        duration?: number | undefined;
         threshold?: number | undefined;
-        'cls-item'?: string | undefined;
-        'cls-placeholder'?: string | undefined;
-        'cls-drag'?: string | undefined;
-        'cls-drag-state'?: string | undefined;
-        'cls-base'?: string | undefined;
-        'cls-no-drag'?: string | undefined;
-        'cls-empty'?: string | undefined;
-        'cls-custom': string;
+        "cls-item"?: string | undefined;
+        "cls-placeholder"?: string | undefined;
+        "cls-drag"?: string | undefined;
+        "cls-drag-state"?: string | undefined;
+        "cls-base"?: string | undefined;
+        "cls-no-drag"?: string | undefined;
+        "cls-empty"?: string | undefined;
+        "cls-custom": string;
         handle?: string | undefined;
     }
 
@@ -514,6 +532,7 @@ export namespace UIkit {
         duration?: number | undefined;
         delay?: number | undefined;
         cls?: string | undefined;
+        container?: string | undefined;
     }
 
     interface UIkitTooltipElement {
@@ -533,18 +552,18 @@ export namespace UIkit {
         concurrent?: number | undefined;
         type?: string | undefined;
         method?: string | undefined;
-        'msg-invalid-mime'?: string | undefined;
-        'msg-invalid-name'?: string | undefined;
-        'cls-dragover'?: string | undefined;
+        "msg-invalid-mime"?: string | undefined;
+        "msg-invalid-name"?: string | undefined;
+        "cls-dragover"?: string | undefined;
         abort?: object | undefined;
-        'before-all'?: object | undefined;
-        'before-send'?: object | undefined;
+        "before-all"?: object | undefined;
+        "before-send"?: object | undefined;
         complete?: object | undefined;
-        'complete-all'?: object | undefined;
+        "complete-all"?: object | undefined;
         error?: object | undefined;
         load?: object | undefined;
-        'load-end'?: object | undefined;
-        'load-start'?: object | undefined;
+        "load-end"?: object | undefined;
+        "load-start"?: object | undefined;
         progress?: object | undefined;
         fail?: object | undefined;
     }
@@ -560,6 +579,7 @@ export namespace UIkit {
     const formCustom: FormCustom;
     const grid: Grid;
     const heightMatch: HeightMatch;
+    const heightViewport: HeightViewport;
     const icon: Icon;
     const image: Img;
     const leader: Leader;

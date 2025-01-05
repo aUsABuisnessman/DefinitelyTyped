@@ -1,85 +1,143 @@
-// Type definitions for exaroton 1.7
-// Project: https://github.com/exaroton/node-exaroton-api
-// Definitions by: Maximilian Hofmann <https://github.com/hofmmaxi>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+import { Method, Options as GotOptions, ResponseType } from "got";
+import { EventEmitter } from "node:events";
+import { ReadStream, WriteStream } from "node:fs";
+import { WebSocket } from "ws";
 
-import { EventEmitter } from 'events';
-import { WebSocket } from 'ws';
-import FormData = require('form-data');
+export { Client, ConfigOptionType, Pool, PoolMember, Request, Response, Server, ServerStatus, Software };
 
-// Exported types
-export { Client, Request, Response, Server, Software };
+declare enum ServerStatus {
+    OFFLINE = 0,
+    ONLINE = 1,
+    STARTING = 2,
+    STOPPING = 3,
+    RESTARTING = 4,
+    SAVING = 5,
+    LOADING = 6,
+    CRASHED = 7,
+    PENDING = 8,
+    PREPARING = 10,
+}
+
 declare class Client {
-    protocol: string | 'https';
+    /**
+     * The protocol type used for request
+     *
+     * Can be http, https, ws or wss
+     * @defaultValue htttps
+     */
+    protocol: string;
 
-    host: string | 'api.exaroton.com';
+    /**
+     * The hostname the client uses to retireve all data
+     *
+     * @defaultValue api.exaroton.com
+     */
+    host: string;
 
-    basePath: string | '/v1';
+    /**
+     * Represents the api version
+     *
+     * @defaultValue /v1/
+     */
+    basePath: string;
 
     /**
      * API base URL used for all requests
      */
     get baseUrl(): string;
 
-    /**
-     * API token used for authentication
-     */
-    private apiToken: string | null;
+    #apiToken: string | null;
+
+    #userAgent: string;
 
     /**
-     * User agent sent with all requests
-     */
-    private userAgent: string;
-
-    /**
+     * Client constructor
      *
-     * @param apiToken string API token, create one here: https://exaroton.com/account/
+     * @param {string} apiToken string API token, create one here: https://exaroton.com/account/
      */
     constructor(apiToken: string);
 
     /**
      * Set the API token
      *
-     * @param apiToken
+     * @param {string} apiToken
      */
-    setAPIToken(apiToken: string): string;
+    setAPIToken(apiToken: string): this;
 
+    /**
+     * Returns the currently set api token used for requests
+     */
     getAPIToken(): string;
 
     /**
      * Set the user agent
      *
-     * @param userAgent
+     * @param {string} userAgent
      */
-    setUserAgent(userAgent: string): Client;
+    setUserAgent(userAgent: string): this;
 
     /**
      * Send a {Request} to the API and get a {Response}
      *
-     * @param request
-     * @throws {RequestError}
+     * @param {Request} request
+     * @throws {RequestError} if the request was unsuccessful
      */
-    request(request: Request): Promise<Response>;
+    request<T extends Request>(request: T): Promise<unknown>;
+
+    /**
+     * @param {string} url
+     * @param {GotOptions & {
+     isStream?: true | boolean;
+     }} gotOptions
+     * @param {stream.Writable} outputStream
+     */
+    streamResponse<T extends NodeJS.WritableStream>(
+        url: string,
+        gotOptions: GotOptions & {
+            isStream?: true | boolean;
+        },
+        outputStream: T,
+    ): Promise<void>;
 
     /**
      * Get a list of all servers
-     * @throws {RequestError}
+     *
+     * @return {Promise<Server[]>}
+     * @throws {RequestError} if the request was unsuccessful
      */
     getServers(): Promise<Server[]>;
 
     /**
+     * Get a list of all credit pools
+     *
+     * @return {Promise<Pool[]>}
+     * @throws {RequestError} if the request was unsuccessful
+     */
+    getPools(): Promise<Pool[]>;
+
+    /**
      * Get account info for the current account
      *
-     * @throws {RequestError}
+     * @throws {RequestError} if the request was unsuccessful
+     * @returns {Promise<Account>}
      */
     getAccount(): Promise<Account>;
 
     /**
-     * Initialize a new server object
+     * Retrieve a specific server via its ID
      *
-     * @param id
+     * @param {string} id
+     * @return {Server}
      */
     server(id: string): Server;
+
+    /**
+     * Retrieve a specific credit pool via its ID
+     *
+     * @param {string} id
+     * @return {Pool}
+     */
+    pool(id: string): Pool;
 }
 
 declare class Request {
@@ -96,37 +154,72 @@ declare class Request {
     /**
      * URL parameters, which are replaced in the endpoint string
      */
-    parameters: object;
+    parameters: Record<string, any>;
 
     /**
      * HTTP request headers
      */
-    headers: object;
+    headers: Record<string, any>;
 
     /**
      * Post body data
      */
-    data: null | object;
+    data: null | Record<string, any> | string;
 
     /**
      * Response class used to create/parse responses to this request
+     *
+     * @defaultValue {Response}
      */
     responseClass: Response;
 
     /**
+     * Response type (text|json|buffer)
+     *
+     * @link https://github.com/sindresorhus/got/blob/main/documentation/2-options.md#responsetype
+     */
+    responseType: ResponseType;
+
+    /**
+     * Optional path to write the response body to
+     */
+    outputPath?: string;
+
+    /**
+     * Optional stream to stream the response body to
+     */
+    outputStream?: WriteStream | null;
+
+    /**
+     * Optional path to read the request body from
+     */
+    inputPath?: string;
+
+    /**
+     * Optional stream to read the request body from
+     */
+    inputStream?: ReadStream | null;
+
+    /**
+     * Client that has executed this request
+     */
+    client: Client;
+
+    /**
      * Set a URL parameter
      *
-     * URL parameters replace {key} variables in the endpoint URL
+     * URL parameters replace key variables in the endpoint URL
      *
-     * @param key
-     * @param value
+     * @param {string} key
+     * @param {string} value
      */
     setParameter(key: string, value: string): void;
 
     /**
+     * Set request headers
      *
-     * @param key
-     * @param value
+     * @param {string} key
+     * @param {string} value
      */
     setHeader(key: string, value: string): void;
 
@@ -143,139 +236,519 @@ declare class Request {
     /**
      * Get body for request
      */
-    getBody(): FormData | string;
+    getBody(): string | ReadStream;
 
     /**
      * Create a response object for this request
      *
-     * @param body
+     * @param {Record<string, any>|string|null} body
+     * @return {Response}
      */
-    createResponse(body: object): Response;
+    createResponse(body: Record<string, any> | string | null): Response;
+
+    /**
+     * @return {boolean}
+     */
+    expectsJsonResponse(): boolean;
+
+    /**
+     * @return {null|WriteStream}
+     */
+    getOutputStream(): WriteStream | null;
+
+    /**
+     * @return {boolean}
+     */
+    hasOutputStream(): boolean;
+
+    /**
+     * @return {null|ReadStream}
+     */
+    getInputStream(): ReadStream | null;
+
+    /**
+     * @return {boolean}
+     */
+    hasInputStream(): boolean;
+
+    /**
+     * Set the data to put as string
+     *
+     * @param {string|Record<string, any>} data
+     * @return {this}
+     */
+    setData(data: string | Record<string, any>): this;
+
+    /**
+     * Set a file as input file for the request body
+     *
+     * @param {string} inputPath
+     * @return {this}
+     */
+    setInputPath(inputPath: string): Request;
+
+    /**
+     * Set a file as output file for the response body
+     *
+     * @param {string} outputPath
+     * @return {this}
+     */
+    setOutputPath(outputPath: string): Request;
+
+    /**
+     * Set a stream as input stream for the request body
+     *
+     * @param {ReadStream} inputStream
+     * @return {this}
+     */
+    setInputStream(inputStream: ReadStream): this;
+
+    /**
+     * Set a stream as output stream for the response body
+     *
+     * @param {WriteStream} outputStream
+     * @return {this}
+     */
+    setOutputStream(outputStream: WriteStream): this;
 }
 
 declare class Response {
-    request: Request;
+    readonly request: Request;
 
     /**
      * (raw/parsed) response body
      */
-    body: object;
+    readonly body: Record<string, any> | string;
 
     /**
-     * Request constructor
+     * Response constructor
      *
-     * @param request
+     * @param {Request} request
      */
     constructor(request: Request);
 
     /**
      * Get the data from the response
      */
-    getData(): object | null;
+    getData(): Record<string, any> | null;
 
     /**
      * Set the body to this.body and maybe parse content
-     *
-     * @param body
      */
-    setBody(body: object): void;
+    setBody(body: Record<string, any> | string): void;
+}
+
+declare class File {
+    /**
+     * File path relative to server root
+     */
+    path: string;
+
+    /**
+     * File name
+     */
+    name: string;
+
+    readonly isTextFile: boolean;
+
+    readonly isConfigFile: boolean;
+
+    readonly isDirectory: boolean;
+
+    readonly isLog: boolean;
+
+    readonly isReadable: boolean;
+
+    readonly isWritable: boolean;
+
+    readonly size: number;
+
+    readonly children: File[] | null;
+
+    #server: Server;
+
+    #client: Client;
+
+    constructor(path: string | null);
+
+    setPath(path: string): void;
+
+    /**
+     * Apply data from the API response
+     *
+     * @param {Record<string, any>} object
+     * @return {File}
+     */
+    applyData(object: Record<string, any>): File;
+
+    /**
+     * Set the server
+     *
+     * @param {Server} server
+     * @returns {this}
+     */
+    setServer(server: Server): File;
+
+    /**
+     * Set the client to be used for further requests
+     *
+     * @param {Client} client
+     * @returns {this}
+     */
+    setClient(client: Client): File;
+
+    getClient(): Client;
+
+    getServer(): Server;
+
+    /**
+     * Get file information from the API
+     *
+     * @returns {Promise<File>}
+     */
+    getInfo(): Promise<File>;
+
+    /**
+     * Get the data/content of a file
+     *
+     * If you want to download the file to a local file use File.download() instead
+     *
+     * @return {Promise<string>}
+     */
+    getContent(): Promise<string>;
+
+    /**
+     * Download the data/content of a file to a local file
+     *
+     * If you want to use the content of the file directly use File.getContent() instead
+     *
+     * @param {string} outputPath
+     * @return {Promise<Response>}
+     */
+    download(outputPath: string): Promise<Response>;
+
+    /**
+     * Download the data/content of a file into a writable stream
+     *
+     * @param {WriteStream} outputStream
+     * @return {Promise<Response>}
+     */
+    downloadToStream(outputStream: WriteStream): Promise<Response>;
+
+    /**
+     * Put the content of a file
+     *
+     * If you want to upload a local file use File.upload() instead
+     *
+     * @param {string} content
+     * @return {Promise<Response>}
+     */
+    putContent(content: string | object): Promise<Response>;
+
+    /**
+     * Upload a local file
+     *
+     * If you want to upload the content of the file directly as a string use File.putContent() instead
+     *
+     * @param {string} inputPath
+     * @return {Promise<Response>}
+     */
+    upload(inputPath: string): Promise<Response>;
+
+    /**
+     * Upload from a readable stream
+     *
+     * @param {ReadStream} inputStream
+     * @return {Promise<Response>}
+     */
+    uploadFromStream(inputStream: ReadStream): Promise<Response>;
+
+    /**
+     * Delete the file
+     *
+     * @return {Promise<Response>}
+     */
+    delete(): Promise<Response>;
+
+    /**
+     * Create a directory
+     *
+     * @return {Promise<Response>}
+     */
+    createAsDirectory(): Promise<Response>;
+
+    /**
+     * Get the children of a directory
+     *
+     * @return {Promise<File[]|null>}
+     */
+    getChildren(): Promise<File[] | null>;
+
+    /**
+     * Get Config object for this file
+     * Only available if the file is a config file
+     *
+     * @return {Config}
+     */
+    getConfig(): Config;
+}
+
+declare class Config {
+    #file?: File;
+    #options: Map<string, ConfigOption> | null;
+    #originalValues: Map<string, ConfigOptionValue> | null;
+
+    constructor(file: File);
+
+    applyData(object: Record<string, any>): this;
+
+    private loadOptions(): Promise<this>;
+
+    getOptions(update?: boolean): Promise<Map<string, ConfigOption>>;
+
+    getOption(key: PropertyKey): Promise<ConfigOption | null>;
+
+    /**
+     * Save all changes made to this config file
+     *
+     * @return {Promise<unknown|null>} null if no changes were made
+     */
+    save(): Promise<unknown> | null;
+}
+
+type ConfigOptionValue = string | number | boolean | string[];
+
+declare class ConfigOption {
+    #key: string;
+    #label: string;
+    #type: string;
+    #value: ConfigOptionValue;
+    #options: string[] | null;
+
+    constructor(key: string, label: string, type: string, value: ConfigOptionValue, options?: string[] | null);
+
+    getKey(): string;
+
+    getLabel(): string;
+
+    getType(): string;
+
+    getValue(): ConfigOptionValue;
+
+    setValue(value: ConfigOptionValue): ConfigOption;
+
+    getOptions(): string[] | null;
+}
+
+declare class ConfigOptionType {
+    static STRING: string;
+    static INTEGER: string;
+    static FLOAT: string;
+    static BOOLEAN: string;
+    static MULTI_SELECT: string;
+    static SELECT: string;
+}
+
+declare class Pool {
+    #client: Client;
+
+    id: string;
+
+    name?: string;
+
+    /**
+     * Pool credit balance
+     */
+    credits?: number;
+
+    /**
+     * Pool server count
+     */
+    servers?: number;
+
+    /**
+     * Pool owner ID
+     */
+    owner?: string;
+
+    /**
+     * Is pool owner
+     */
+    isOwner?: boolean;
+
+    /**
+     * Pool member count
+     */
+    members?: number;
+
+    /**
+     * Share of this pool owned by the current account
+     */
+    ownShare?: number;
+
+    /**
+     * Credits in this pool owned by the current account
+     */
+    ownCredits?: number;
+
+    constructor(client: Client, id: string);
+
+    setFromObject(poolObject: Record<string, any>): this;
+
+    /**
+     * Get credit pool info
+     *
+     * @return {this}
+     * @throws {RequestError} if the request was unsuccessful
+     */
+    get(): Promise<this>;
+
+    /**
+     * Get pool members
+     *
+     * @return {Promise<PoolMember[]>}
+     */
+    getMembers(): Promise<PoolMember[]>;
+
+    /**
+     * Get pool servers
+     *
+     * @return {Promise<Server[]>}
+     */
+    getServers(): Promise<Server[]>;
+}
+
+declare class PoolMember {
+    /**
+     * Pool member account ID
+     */
+    account: string;
+
+    /**
+     * Pool member name
+     */
+    name: string;
+
+    /**
+     * Pool member share
+     */
+    share: number;
+
+    /**
+     * Pool member credits
+     */
+    credits: number;
+
+    /**
+     * Is pool owner
+     */
+    isOwner: boolean;
+
+    constructor(poolMemberObject: Record<string, any>);
 }
 
 interface Server {
-    id: string;
-    name: string;
-    address: string;
-    motd: string;
-    status: ServerStatus;
-    host: string | null;
-    port: number | null;
-    shared: boolean;
-    software: Software;
-    players: PlayerList[];
+    readonly id: string;
+    readonly name: string;
+    readonly address: string;
+    readonly motd: string;
+    readonly status: number;
+    readonly host: string | null;
+    readonly port: number | null;
+    readonly shared: boolean;
+    readonly software: Software;
+    readonly players: Players;
 }
 
 interface Software {
-    id: string;
-    name: string;
-    version: string;
+    readonly id: string;
+    readonly name: string;
+    readonly version: string;
+}
+
+export interface StreamTypes {
+    status: [server: Server];
+    "console:line": [data: string];
+    "tick:tick": [data: { averageTickTime: number; tps: number }];
+    "stats:stats": [data: { memory: { percent: number; usage: number } }];
+    "heap:heap": [data: { usage: number }];
 }
 
 declare class Server extends EventEmitter {
     /**
      * Shorthand to get server status constants
      */
-    STATUS: {
-        OFFLINE: 0;
-        ONLINE: 1;
-        STARTING: 2;
-        STOPPING: 3;
-        RESTARTING: 4;
-        SAVING: 5;
-        LOADING: 6;
-        CRASHED: 7;
-        PENDING: 8;
-        PREPARING: 10;
+    readonly STATUS: {
+        readonly OFFLINE: 0;
+        readonly ONLINE: 1;
+        readonly STARTING: 2;
+        readonly STOPPING: 3;
+        readonly RESTARTING: 4;
+        readonly SAVING: 5;
+        readonly LOADING: 6;
+        readonly CRASHED: 7;
+        readonly PENDING: 8;
+        readonly PREPARING: 10;
     };
 
-    private client: Client;
+    #client: Client;
+
+    #websocketClient: WebsocketClient;
 
     /**
      * Unique server ID
      */
-    id: string;
+    readonly id: string;
+
+    readonly name: string;
 
     /**
-     * Server name
+     * Full server address
+     * @example example.exaroton.me
      */
-    name: string;
+    readonly address: string;
 
     /**
-     * Full server address (e.g. example.exaroton.me)
+     * Message of the day
      */
-    address: string;
-
-    /**
-     * MOTD
-     */
-    motd: string;
+    readonly motd: string;
 
     /**
      * Server status
-     * @see ServerStatus
+     * @see {STATUS}
      */
-    status: ServerStatus;
+    readonly status: number;
 
     /**
      * Host address, only available if the server is online
      */
-    host: string | null;
+    readonly host: string | null;
 
     /**
      * Server port, only available if the server is online
      */
-    port: number | null;
+    readonly port: number | null;
 
     /**
-     * Check if this is an owned or shared server
+     * Check if this an owned or a shared server
      */
-    shared: false | boolean;
+    readonly shared: boolean;
 
     /**
      * Server software
      */
-    software: Software;
+    readonly software: Software;
+
+    /**
+     * Player data
+     */
+    readonly player: Players;
 
     /**
      * Player lists
      */
-    private playerLists: PlayerList[];
+    #playerLists: Record<string, PlayerList>;
 
-    /**
-     * Server constructor
-     *
-     * @param client
-     * @param id
-     */
     constructor(client: Client, id: string);
 
     getClient(): Server;
@@ -283,35 +756,41 @@ declare class Server extends EventEmitter {
     /**
      * Get/update the server info
      *
-     * @throws {RequestError}
+     * @return {this}
+     * @throws {RequestError} if the request was unsuccessful
      */
     get(): Promise<Server>;
 
     /**
      * Start the server
      *
-     * @throws {RequestError}
+     * @param {boolean} useOwnCredits Use your own credits instead of the server owner's ones
+     * @return {Promise<Response>}
+     * @throws {RequestError} if the request was unsuccessful
      */
-    start(): Promise<Response>;
+    start(useOwnCredits?: boolean): Promise<Response>;
 
     /**
      * Stop the server
      *
-     * @throws {RequestError}
+     * @return {Promise<Response>}
+     * @throws {RequestError} if the request was unsuccessful
      */
     stop(): Promise<Response>;
 
     /**
      * Restart the server
      *
-     * @throws {RequestError}
+     * @return {Promise<Response>}
+     * @throws {RequestError} if the request was unsuccessful
      */
     restart(): Promise<Response>;
 
     /**
      * Execute a command in the server console
      *
-     * @param command
+     * @param {string} command
+     * @return {Promise<Response|boolean>}
      */
     executeCommand(command: string): Promise<Response | boolean>;
 
@@ -319,6 +798,8 @@ declare class Server extends EventEmitter {
      * Get the content of the server logs
      *
      * This is cached and will not return the latest updates immediately.
+     *
+     * @returns {Promise<string>}
      */
     getLogs(): Promise<string>;
 
@@ -326,30 +807,38 @@ declare class Server extends EventEmitter {
      * Upload the content of the server logs to mclo.gs
      *
      * Returns the URL of the logs on mclo.gs
+     *
+     * @returns {Promise<string>}
      */
     shareLogs(): Promise<string>;
 
     /**
      * Get the assigned max server RAM in GB
+     *
+     * @return {Promise<number>}
      */
     getRAM(): Promise<number>;
 
     /**
      * Set the assigned max server RAM in GB
      *
-     * @param ram
+     * @param {number} ram
+     * @return {Promise<Response>}
      */
     setRAM(ram: number): Promise<Response>;
 
     /**
-     * Get the server MOTD
+     * Get the server Message of the day
+     *
+     * @returns {Promise<string>}
      */
     getMOTD(): Promise<string>;
 
     /**
-     * Set the server MOTD
+     * Set a new Message of the day
      *
-     * @param motd
+     * @param {string} motd
+     * @returns {Promise<Response>}
      */
     setMOTD(motd: string): Promise<Response>;
 
@@ -357,19 +846,23 @@ declare class Server extends EventEmitter {
      * Get a server option
      *
      * @param option
+     * @return {Promise<*>}
      */
-    getOption(option: string): Promise<object | null>;
+    getOption(option: string): Promise<Record<string, any> | null>;
 
     /**
      * Set a server option
      *
      * @param option
      * @param value
+     * @return {Promise<Response>}
      */
     setOption(option: string, value: string): Promise<Response>;
 
     /**
      * Get all player lists available for the server
+     *
+     * @returns {Promise<PlayerList[]>}
      */
     getPlayerLists(): Promise<PlayerList[]>;
 
@@ -377,411 +870,154 @@ declare class Server extends EventEmitter {
      * Get a player list by name
      *
      * @param name
+     * @returns {PlayerList}
      */
-    getPlayerList(name: PlayerListTypes): PlayerList;
+    getPlayerList(name: PlayerListType): PlayerList;
+
+    /**
+     * Get a file object for a server file
+     *
+     * This doesn't request file info or content yet.
+     * Use the File.getInfo() and File.getContent() functions for that
+     *
+     * @param {string} path The path of the file relative to the server root
+     * @return {File}
+     */
+    getFile(path: string): File;
 
     /**
      * Check if the server has one or one of multiple status codes
      *
      * Use this.STATUS.<STATUS> for status codes
      *
-     * @param status
+     * @param {int|int[]} status
      */
     hasStatus(status: number | number[]): boolean;
 
     /**
      * Get a websocket client for this server
+     *
+     * @return {WebsocketClient}
      */
     getWebsocketClient(): WebsocketClient;
 
     /**
      * Subscribe to one or multiple streams
      *
-     * @param streams
+     * @return {boolean}
+     * @param {string[]|string} [streams]
      */
-    subscribe(streams?: subscriptionTypes[] | subscriptionTypes): boolean;
+    subscribe(streams?: SubscriptionType[] | SubscriptionType): boolean;
 
     /**
      * Unsubscribe from one, multiple or all streams
      *
-     * @param streams
+     * @param {string[]|string} [streams]
      */
-    unsubscribe(streams?: subscriptionTypes[] | subscriptionTypes): boolean;
+    unsubscribe(streams?: SubscriptionType[] | SubscriptionType): boolean;
 
     /**
      * Map raw object to this instance
      *
-     * @param server
+     * @param {Record<string, any>} server
+     * @return {this}
      */
-    setFromObject(server: object): Server;
+    setFromObject(server: Record<string, any>): Server;
 
     /**
      * Only return intended public fields for JSON serialization
      *
      * Otherwise, fields inherited from EventEmitter would be serialized as well
+     *
+     * @returns {Record<string, any>}
      */
-    toJSON(): Server;
+    toJSON(): Record<string, any>;
+
+    on<StreamType extends keyof StreamTypes>(
+        stream: StreamType,
+        listener: (...args: StreamTypes[StreamType]) => void,
+    ): this;
 }
 
 declare class Software {
-    /**
-     * Software ID
-     */
-    id: string;
+    readonly id: string;
 
-    /**
-     * Software name
-     */
-    name: string;
+    readonly name: string;
 
-    /**
-     * Software version
-     */
-    version: string;
+    readonly version: string;
 
-    /**
-     * Software constructor
-     *
-     * @param softwareObject
-     */
     constructor(softwareObject: Software);
 }
 
 // Internal types
+
 declare class Account {
-    private client: Client;
+    #client: Client;
 
-    /**
-     * Username
-     */
-    name: string;
+    readonly name: string;
 
-    /**
-     * Email address
-     */
-    email: string;
+    readonly email: string;
 
-    /**
-     * Email address verification
-     */
-    verified: boolean;
+    readonly verified: boolean;
 
-    /**
-     * The amount of credits currently available
-     */
-    credits: number;
+    readonly credits: number;
 
-    /**
-     * Account constructor
-     *
-     * @param client
-     */
     constructor(client: Client);
 
-    /**
-     * Get/update the account info
-     *
-     * @throws {RequestError}
-     */
     get(): Promise<Account>;
 
-    /**
-     * Map raw objects to this instance
-     *
-     * @param account
-     */
     setFromObject(account: object): Account;
 }
 
-declare class RequestError extends Error {
-    statusCode: number;
-    response: Response;
-
-    /**
-     * Set error and status code from response object
-     *
-     * Returns if an error message was found
-     *
-     * @param response
-     */
-    setErrorFromResponseBody(response: object): boolean;
-}
-
-declare class RequestBodyError extends RequestError {
-    constructor(response: Response);
-}
-
-declare class RequestStatusError extends RequestError {
-    constructor(error: RequestError);
-}
-
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
-
-declare class GetServersRequest extends Request {
-    endpoint: string;
-    responseClass: ServersResponse;
-}
-
-declare class ServerRequest extends Request {
-    /**
-     * Server request constructor
-     *
-     * @param id
-     */
-    constructor(id: string);
-}
-
-declare class ExecuteServerCommandRequest extends ServerRequest {
-    endpoint: string;
-    method: 'POST';
-
-    /**
-     * Server request constructor
-     *
-     * @param id
-     * @param command
-     */
-    constructor(id: string, command: string);
-}
-
-declare class GetServerLogsRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class GetServerOptionRequest extends ServerRequest {
-    endpoint: string;
-
-    /**
-     * GetServerOptionRequest constructor
-     *
-     * @param id
-     * @param option
-     */
-    constructor(id: string, option: string);
-
-    /**
-     * Set the option name
-     *
-     * @param option
-     */
-    setOption(option: string): void;
-}
-
-declare class GetServerRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class RestartServerRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class SetServerOptionRequest extends GetServerOptionRequest {
-    method: 'POST';
-
-    /**
-     * SetServerOptionRequest constructor
-     *
-     * @param id
-     * @param option
-     * @param value
-     */
-    constructor(id: string, option: string, value: any);
-}
-
-declare class ShareServerLogsRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class StartServerRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class StopSeversRequest extends ServerRequest {
-    endpoint: string;
-}
-
-declare class PlayerListRequest extends ServerRequest {
-    endpoint: string;
-    constructor(id: string, name: string);
-}
-
-declare class DeletePlayerListEntriesRequest extends PlayerListRequest {
-    method: 'DELETE';
-    constructor(id: string, name: string, entries: string);
-}
-
-declare class GetPlayerListEntriesRequest extends PlayerListRequest {}
-
-declare class GetPlayerListRequest extends ServerRequest {
-    endpoint: string;
-    responseClass: PlayerListResponse;
-}
-
-declare class PutPlayerListEntriesRequest extends PlayerListRequest {
-    method: 'PUT';
-    constructor(id: string, name: string, entries: string);
-}
-
-declare class GetAccountRequest extends Request {
-    endpoint: 'account/' | string;
-}
-
-declare class PlayerListResponse extends Response {
-    lists: PlayerList[];
-
-    /**
-     * @inheritdoc
-     */
-    setBody(body: object): void;
-
-    /**
-     * @inheritdoc
-     */
-    getData(): PlayerList[];
-}
-
-declare class ServersResponse extends Response {
-    servers: Server[];
-
-    /**
-     * @inheritdoc
-     */
-    setBody(body: object): void;
-
-    /**
-     * @inheritdoc
-     */
-    getData(): Server[];
-}
-
-interface ServerStatus {
-    OFFLINE: 0;
-    ONLINE: 1;
-    STARTING: 2;
-    STOPPING: 3;
-    RESTARTING: 4;
-    SAVING: 5;
-    LOADING: 6;
-    CRASHED: 7;
-    PENDING: 8;
-    PREPARING: 10;
-}
-
-type PlayerListTypes = 'whitelist' | 'blacklist';
+type PlayerListType = "whitelist" | "ops" | "banned-ips" | "banned-players";
 
 declare class PlayerList {
-    /**
-     * List name / identifier
-     */
     name: string;
 
     private server: Server;
     private client: Client;
 
-    /**
-     * @param name
-     */
     constructor(name: string);
 
-    /**
-     * Set the server for this list
-     *
-     * @param server
-     */
     setServer(server: Server): PlayerList;
 
-    /**
-     * Set the API client
-     *
-     * @param client
-     */
     setClient(client: Client): PlayerList;
 
-    /**
-     * Get the list name
-     */
     getName(): string;
 
     getEntries(): Promise<string[]>;
 
-    /**
-     * Add multiple entries
-     *
-     * @param entries
-     */
     addEntries(entries: string[]): Promise<Response>;
 
-    /**
-     * Add a single entry
-     *
-     * @param entry
-     */
     addEntry(entry: string): Promise<Response>;
 
-    /**
-     * Delete multiple entries
-     *
-     * @param entries
-     */
     deleteEntries(entries: string[]): Promise<Response>;
 
-    /**
-     * Delete a single entry
-     *
-     * @param entry
-     */
     deleteEntry(entry: string): Promise<Response>;
 }
 
 declare class Players {
-    /**
-     * Max amount of players / slots
-     */
     max: number;
 
-    /**
-     * Current amount of players
-     */
     count: number;
 
-    /**
-     * List of player names
-     */
     list: string[];
 
-    /**
-     * Players constructor
-     *
-     * @param playersObject
-     */
     constructor(playersObject: Players);
 }
 
-type Message = 'started' | 'stopped';
+type Message = "started" | "stopped";
 
 type StreamStatus = 1 | 2 | 3 | 4;
 
-/**
- * @classdesc Websocket client to connect to the websocket for this server
- */
 declare class WebsocketClient extends EventEmitter {
-    protocol: 'wss' | string;
+    readonly protocol: string;
     private client: Client;
     private server: Server;
     private websocket: WebSocket;
 
-    /**
-     * Automatically reconnect in cas of a disconnect
-     */
     autoReconnect: boolean;
 
-    /**
-     * Time to wait to reconnect
-     *
-     * Only change this with caution. A time too low here can
-     * cause a spam in requests which can get your application
-     * rate limited or even blocked.
-     */
     reconnectTimeout: 3000 | number;
 
     private reconnectInterval;
@@ -798,19 +1034,10 @@ declare class WebsocketClient extends EventEmitter {
         tick: TickStream;
     };
 
-    /**
-     * @param server
-     */
     constructor(server: Server);
 
-    /**
-     * Connect to websocket
-     */
     connect(): void;
 
-    /**
-     * Disconnect from the websocket and all streams
-     */
     disconnect(): void;
 
     onOpen(): void;
@@ -827,13 +1054,8 @@ declare class WebsocketClient extends EventEmitter {
 
     getServer(): Server;
 
-    getServerStatus(): Promise<ServerStatus>;
+    getServerStatus(): Promise<number>;
 
-    /**
-     * Get a stream by name
-     *
-     * @param stream
-     */
     getStreams(stream: string): boolean | Stream;
 
     hasStream(stream: string): boolean;
@@ -842,105 +1064,77 @@ declare class WebsocketClient extends EventEmitter {
 
     removeStreams(stream: string): void;
 
-    /**
-     * @param stream
-     * @param type
-     * @param data
-     */
-    send(stream: string, type: any, data: any): boolean;
+    send(stream: string, type: string, data: string): boolean;
 }
 
 declare class Stream extends EventEmitter {
-    private client: WebsocketClient;
+    private readonly client: WebsocketClient;
     private started: false | boolean;
     private shouldStart: false | boolean;
-    name: string;
-    startData: object;
-    startStatuses: StreamStatus[];
+    readonly name: string;
+    readonly startData: object | string;
+    readonly startStatuses: StreamStatus[];
 
-    /**
-     * @param client
-     */
     constructor(client: WebsocketClient);
 
-    send(type: any, data: any): boolean;
+    send(type: SubscriptionType, data: any): boolean;
 
-    /**
-     * Status change event
-     */
     onStatusChange(): boolean;
 
-    /**
-     * Message event listener
-     *
-     * @param message
-     */
     onMessage(message: Message): void;
 
     onDataMessage(type: string, message: any): void;
 
     onDisconnect(): void;
 
-    /**
-     * Double event emitter for generic or specific event handling
-     *
-     * @param type
-     * @param data
-     */
-    emitEvent(type: string, data: any[]): void;
+    emitEvent(type: string, data: object[]): void;
 
-    /**
-     * Start this stream
-     */
-    start(data: any): void;
+    start(data?: any): void;
 
-    /**
-     * Should/can this stream be started
-     */
     shouldBeStarted(): Promise<boolean>;
 
-    /**
-     * Try to start if possible
-     */
     tryToStart(): Promise<void>;
 
-    /**
-     * Stop this stream
-     */
     stop(): void;
 
-    /**
-     * Try to stop this stream if possible
-     */
     tryToStop(): Promise<boolean>;
 
     isStarted(): boolean;
 }
 
-type subscriptionTypes = 'tick' | 'heap' | 'stats' | 'console';
+type SubscriptionType = "tick" | "heap" | "stats" | "console";
+
+type TickDataType = "start" | "stop" | "started" | "tick";
 
 declare class TickStream extends Stream {
-    name: string;
-    startStatuses: [1];
-    onDataMessage(type: string, message: any): void;
+    readonly name: string;
+    startStatuses: StreamStatus[];
+
+    onDataMessage(type: TickDataType, message: string): void;
 }
+
+type StatsDataType = "start" | "stop" | "started" | "stats";
 
 declare class StatsStream extends Stream {
-    name: string;
-    startStatuses: [1];
+    readonly name: string;
+    startStatuses: StreamStatus[];
 }
 
+type HeapDataType = "start" | "stop" | "started" | "heap";
+
 declare class HeapStream extends Stream {
-    name: string;
-    startStatuses: [1];
+    readonly name: string;
+    startStatuses: StreamStatus[];
 }
+
+type ConsoleDataType = "start" | "stop" | "command" | "started" | "line";
 
 declare class ConsoleStream extends Stream {
     private ansiRegex: RegExpConstructor;
-    name: string;
+    readonly name: string;
     startData: { tail: 0 };
 
-    onDataMessage(type: string, message: any): void;
+    onDataMessage(type: ConsoleDataType, message: string): void;
 
     parseReturns(string: string): string;
 

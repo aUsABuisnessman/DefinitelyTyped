@@ -1,45 +1,87 @@
-// Type definitions for svelte-leafletjs 0.8
-// Project: https://github.com/ngyewch/svelte-leaflet
-// Definitions by: Kyle Hensel <https://github.com/k-yle>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.2
+import * as L from "leaflet";
+import type { SvelteComponentTyped } from "svelte";
 
-import type { SvelteComponentTyped } from 'svelte';
-import * as L from 'leaflet';
-import * as ReactLeaflet from 'react-leaflet';
+export interface MapEvents {
+    click: L.LeafletMouseEvent;
+    dblclick: L.LeafletMouseEvent;
+    mousedown: L.LeafletMouseEvent;
+    mouseup: L.LeafletMouseEvent;
+    mouseover: L.LeafletMouseEvent;
+    mouseout: L.LeafletMouseEvent;
+    mousemove: L.LeafletMouseEvent;
+    contextmenu: L.LeafletMouseEvent;
+    focus: L.LeafletEvent;
+    blur: L.LeafletEvent;
+    preclick: L.LeafletMouseEvent;
+    load: L.LeafletEvent;
+    unload: L.LeafletEvent;
+    viewreset: L.LeafletEvent;
+    move: L.LeafletEvent;
+    movestart: L.LeafletEvent;
+    moveend: L.LeafletEvent;
+    dragstart: L.LeafletEvent;
+    drag: L.LeafletEvent;
+    dragend: L.DragEndEvent;
+    zoomstart: L.LeafletEvent;
+    zoom: L.LeafletEvent;
+    zoomend: L.LeafletEvent;
+    zoomlevelschange: L.LeafletEvent;
+    resize: L.ResizeEvent;
+    autopanstart: L.LeafletEvent;
+    layeradd: L.LayerEvent;
+    layerremove: L.LayerEvent;
+    baselayerchange: L.LayersControlEvent;
+    overlayadd: L.LayersControlEvent;
+    overlayremove: L.LayersControlEvent;
+    locationfound: L.LocationEvent;
+    locationerror: L.ErrorEvent;
+    popupopen: L.PopupEvent;
+    popupclose: L.PopupEvent;
+}
 
-/** Given a string `onX`, this returns `X` */
-type RemoveOn<T> = T extends `on${infer P}` ? P : never;
+export interface MarkerEvents {
+    click: L.LeafletMouseEvent;
+    dblclick: L.LeafletMouseEvent;
+    mousedown: L.LeafletMouseEvent;
+    mouseover: L.LeafletMouseEvent;
+    mouseout: L.LeafletMouseEvent;
+    contextmenu: L.LeafletMouseEvent;
+    dragstart: L.LeafletEvent;
+    drag: L.LeafletEvent;
+    dragend: L.DragEndEvent;
+    move: L.LeafletEvent;
+    add: L.LeafletEvent;
+    remove: L.LeafletEvent;
+    popupopen: L.PopupEvent;
+    popupclose: L.PopupEvent;
+}
 
-/** This is technically not required since we know every property is a function, but TS doesn't know that */
-type AssertIsFunction<T> = T extends (...args: any) => any ? T : never;
+export interface TileLayerEvents {
+    loading: L.LeafletEvent;
+    load: L.LeafletEvent;
+    tileloadstart: L.TileEvent;
+    tileload: L.TileEvent;
+    tileunload: L.TileEvent;
+    tileerror: L.TileEvent;
+}
 
-/**
- * Helper to transform the event maps defined in `@types/react-leaflet`.
- * This makes `@types/react-leaflet` the source of truth for the events in `@types/svelte-leafletjs`.
- *
- * ```ts
- * // original
- * type ReactEventMap = {
- *   onsomething?(e: SomeEvent): void
- * }
- *
- * // converted
- * type SvelteEventMap = {
- *   something: SomeEvent;
- * }
- * ```
- */
-type CreateSvelteEventMap<ReactEventMap> = {
-    [EventName in keyof ReactEventMap as RemoveOn<EventName>]-?: NonNullable<
-        Parameters<AssertIsFunction<NonNullable<ReactEventMap[EventName]>>>[0]
-    >;
-};
+export interface PathEvents {
+    click: L.LeafletMouseEvent;
+    dblclick: L.LeafletMouseEvent;
+    mousedown: L.LeafletMouseEvent;
+    mouseover: L.LeafletMouseEvent;
+    mouseout: L.LeafletMouseEvent;
+    contextmenu: L.LeafletMouseEvent;
+    add: L.LeafletEvent;
+    remove: L.LeafletEvent;
+    popupopen: L.PopupEvent;
+    popupclose: L.PopupEvent;
+}
 
-export type MapEvents = CreateSvelteEventMap<ReactLeaflet.MapEvents>;
-export type MarkerEvents = CreateSvelteEventMap<ReactLeaflet.MarkerEvents>;
-export type TileLayerEvents = CreateSvelteEventMap<ReactLeaflet.TileLayerEvents>;
-export type PathEvents = CreateSvelteEventMap<ReactLeaflet.PathEvents>;
+type MapEventKeys = Array<keyof MapEvents>;
+type MarkerEventKeys = Array<keyof MarkerEvents>;
+type TileLayerEventKeys = Array<keyof TileLayerEvents>;
+type PathEventKeys = Array<keyof PathEvents>;
 
 export namespace LeafletContext {
     interface Map {
@@ -79,6 +121,7 @@ export namespace LeafletContext {
 export class LeafletMap extends SvelteComponentTyped<
     {
         options?: L.MapOptions;
+        events?: MapEventKeys;
         getMap?(): L.Map;
     },
     MapEvents,
@@ -94,6 +137,7 @@ export class TileLayer extends SvelteComponentTyped<
         opacity?: number;
         zIndex?: number;
         options?: L.TileLayerOptions;
+        events?: TileLayerEventKeys;
         getTileLayer?(): L.TileLayer;
     },
     TileLayerEvents,
@@ -107,6 +151,7 @@ export class Circle extends SvelteComponentTyped<
         latLng: L.LatLngExpression;
         radius?: number;
         options?: L.CircleMarkerOptions;
+        events?: PathEventKeys;
         getCircle?(): L.Circle;
     },
     PathEvents,
@@ -120,6 +165,7 @@ export class CircleMarker extends SvelteComponentTyped<
         latLng: L.LatLngExpression;
         radius?: number;
         options?: L.CircleMarkerOptions;
+        events?: MarkerEventKeys;
         getCircleMarker?(): L.CircleMarker;
     },
     MarkerEvents,
@@ -132,6 +178,7 @@ export class Rectangle extends SvelteComponentTyped<
     L.PathOptions & {
         latLngBounds: L.LatLngBoundsExpression;
         options?: L.PolylineOptions;
+        events?: PathEventKeys;
         getRectangle?(): L.Rectangle;
     },
     PathEvents,
@@ -144,6 +191,7 @@ export class GeoJSON extends SvelteComponentTyped<
     {
         url: string;
         options?: L.GeoJSONOptions;
+        events?: PathEventKeys;
         getGeoJSON?(): L.GeoJSON;
     },
     PathEvents,
@@ -163,13 +211,25 @@ export class Icon extends SvelteComponentTyped<
     getIcon(): L.Icon;
 }
 
+export class DivIcon extends SvelteComponentTyped<
+    {
+        options?: L.DivIconOptions;
+        getDivIcon?(): L.DivIcon;
+    },
+    never,
+    never
+> {
+    getDivIcon(): L.DivIcon;
+}
+
 export class ImageOverlay extends SvelteComponentTyped<
     {
         imageUrl: string;
         bounds: L.LatLngBoundsExpression;
-        options?: L.ImageOverlayOptions;
         opacity?: number;
         zIndex?: number;
+        options?: L.ImageOverlayOptions;
+        events?: PathEventKeys;
         getImageOverlay?(): L.ImageOverlay;
     },
     PathEvents,
@@ -185,6 +245,7 @@ export class Marker extends SvelteComponentTyped<
         icon?: L.Icon;
         opacity?: number;
         options?: L.MarkerOptions;
+        events?: MarkerEventKeys;
         getMarker?(): L.Marker;
     },
     MarkerEvents,
@@ -197,6 +258,7 @@ export class Polygon extends SvelteComponentTyped<
     L.PathOptions & {
         latLngs: L.LatLngExpression[] | L.LatLngExpression[][] | L.LatLngExpression[][][];
         options?: L.PolylineOptions;
+        events?: PathEventKeys;
         getPolygon?(): L.Polygon;
     },
     PathEvents,
@@ -209,6 +271,7 @@ export class Polyline extends SvelteComponentTyped<
     L.PathOptions & {
         latLngs: L.LatLngExpression[] | L.LatLngExpression[][];
         options?: L.PolylineOptions;
+        events?: PathEventKeys;
         getPolyline?(): L.Polyline;
     },
     PathEvents,
@@ -220,6 +283,7 @@ export class Polyline extends SvelteComponentTyped<
 export class Popup extends SvelteComponentTyped<
     {
         options?: L.PopupOptions;
+        events?: PathEventKeys;
         getPopup?(): L.Popup;
     },
     PathEvents,
@@ -243,6 +307,7 @@ export class ScaleControl extends SvelteComponentTyped<
 export class Tooltip extends SvelteComponentTyped<
     {
         options?: L.TooltipOptions;
+        events?: PathEventKeys;
         getTooltip?(): L.Tooltip;
     },
     PathEvents,

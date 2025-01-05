@@ -1,26 +1,13 @@
+//////////////////////////////////////////////////////
+// BEWARE: DO NOT EDIT MANUALLY! Changes will be lost!
+//////////////////////////////////////////////////////
+
+import { Experiments } from "./experiments";
+import { ExtensionTypes } from "./extensionTypes";
+
 /**
  * Namespace: browser.manifest
- * Generated from Mozilla sources. Do not manually edit!
- *
- * Permissions: -
- *
- * Comments found in source JSON schema files:
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * Copyright 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- * Copyright 2013 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
  */
-import { ExtensionTypes } from "./extensionTypes";
-import { Experiments } from "./experiments";
-
 export namespace Manifest {
     /**
      * Common properties for all manifest.json files
@@ -32,7 +19,7 @@ export namespace Manifest {
          * The applications property is deprecated, please use 'browser_specific_settings'
          * Optional.
          */
-        applications?: BrowserSpecificSettings;
+        applications?: DeprecatedApplications;
 
         /**
          * Optional.
@@ -102,6 +89,7 @@ export namespace Manifest {
         icons?: Record<string, ExtensionFileUrl>;
 
         /**
+         * The 'split' value is not supported.
          * Optional.
          */
         incognito?: WebExtensionManifestIncognitoEnum;
@@ -113,6 +101,13 @@ export namespace Manifest {
             | WebExtensionManifestBackgroundC1Type
             | WebExtensionManifestBackgroundC2Type
             | WebExtensionManifestBackgroundC3Type;
+
+        /**
+         * Alias property for options_ui.page, ignored when options_ui.page is set. When using this property the options page is
+         * always opened in a new tab.
+         * Optional.
+         */
+        options_page?: ExtensionURL;
 
         /**
          * Optional.
@@ -143,6 +138,11 @@ export namespace Manifest {
          * Optional.
          */
         host_permissions?: MatchPattern[];
+
+        /**
+         * Optional.
+         */
+        optional_host_permissions?: MatchPattern[];
 
         /**
          * Optional.
@@ -178,6 +178,11 @@ export namespace Manifest {
          * Optional.
          */
         commands?: Record<string, WebExtensionManifestCommandsType>;
+
+        /**
+         * Optional.
+         */
+        declarative_net_request?: WebExtensionManifestDeclarativeNetRequestType;
 
         /**
          * Optional.
@@ -240,11 +245,6 @@ export namespace Manifest {
      * Represents a WebExtension language pack manifest.json file
      */
     interface WebExtensionLangpackManifest extends ManifestBase {
-        /**
-         * Optional.
-         */
-        homepage_url?: string;
-
         langpack_id: string;
 
         languages: Record<string, WebExtensionLangpackManifestLanguagesPatternType>;
@@ -259,21 +259,7 @@ export namespace Manifest {
      * Represents a WebExtension dictionary manifest.json file
      */
     interface WebExtensionDictionaryManifest extends ManifestBase {
-        /**
-         * Optional.
-         */
-        homepage_url?: string;
-
         dictionaries: Record<string, string>;
-    }
-
-    /**
-     * Represents a WebExtension site permissions manifest.json file
-     */
-    interface WebExtensionSitePermissionsManifest extends ManifestBase {
-        site_permissions: SitePermission[];
-
-        install_origins: [string];
     }
 
     interface ThemeIcons {
@@ -301,7 +287,9 @@ export namespace Manifest {
         | "search"
         | "activeTab"
         | "webRequest"
+        | "webRequestAuthProvider"
         | "webRequestBlocking"
+        | "webRequestFilterResponse"
         | "webRequestFilterResponse.serviceWorkerScript";
 
     type OptionalPermission =
@@ -313,6 +301,7 @@ export namespace Manifest {
         | "bookmarks"
         | "browserSettings"
         | "browsingData"
+        | "declarativeNetRequestFeedback"
         | "devtools"
         | "downloads"
         | "downloads.open"
@@ -324,6 +313,7 @@ export namespace Manifest {
         | "proxy"
         | "nativeMessaging"
         | "sessions"
+        | "tabGroups"
         | "tabs"
         | "tabHide"
         | "topSites"
@@ -332,30 +322,27 @@ export namespace Manifest {
 
     type OptionalPermissionOrOrigin = OptionalPermission | MatchPattern;
 
+    type PermissionPrivileged = "mozillaAddons" | "activityLog" | "networkStatus" | "normandyAddonStudy";
+
     type PermissionNoPrompt =
-        | OptionalPermission
+        | OptionalPermissionNoPrompt
+        | PermissionPrivileged
         | "alarms"
-        | "mozillaAddons"
         | "storage"
         | "unlimitedStorage"
-        | "activityLog"
         | "captivePortal"
         | "contextualIdentities"
+        | "declarativeNetRequestWithHostAccess"
         | "dns"
         | "geckoProfiler"
         | "identity"
         | "menus"
         | "contextMenus"
-        | "networkStatus"
-        | "normandyAddonStudy"
-        | "theme"
-        | "urlbar";
+        | "theme";
 
-    type Permission = PermissionNoPrompt | OptionalPermission | string;
+    type Permission = PermissionNoPrompt | OptionalPermission | "declarativeNetRequest" | string;
 
     type PermissionOrOrigin = Permission | MatchPattern;
-
-    type SitePermission = "midi" | "midi-sysex";
 
     type HttpURL = string;
 
@@ -387,6 +374,30 @@ export namespace Manifest {
          * Optional.
          */
         strict_max_version?: string;
+
+        /**
+         * Optional.
+         */
+        admin_install_only?: boolean;
+    }
+
+    interface GeckoAndroidSpecificProperties {
+        /**
+         * Optional.
+         */
+        strict_min_version?: string;
+
+        /**
+         * Optional.
+         */
+        strict_max_version?: string;
+    }
+
+    interface DeprecatedApplications {
+        /**
+         * Optional.
+         */
+        gecko?: FirefoxSpecificProperties;
     }
 
     interface BrowserSpecificSettings {
@@ -394,6 +405,11 @@ export namespace Manifest {
          * Optional.
          */
         gecko?: FirefoxSpecificProperties;
+
+        /**
+         * Optional.
+         */
+        gecko_android?: GeckoAndroidSpecificProperties;
     }
 
     type MatchPattern = "<all_urls>" | MatchPatternRestricted | MatchPatternUnestricted;
@@ -452,17 +468,32 @@ export namespace Manifest {
         all_frames?: boolean;
 
         /**
-         * If matchAboutBlank is true, then the code is also injected in about:blank and about:srcdoc frames if your extension has
-         * access to its parent document. Code cannot be inserted in top-level about:-frames. By default it is <code>false</code>.
+         * If match_about_blank is true, then the code is also injected in about:blank and about:srcdoc frames if your extension
+         * has access to its parent document. Ignored if match_origin_as_fallback is specified. By default it is <code>false</code>.
          * Optional.
          */
         match_about_blank?: boolean;
+
+        /**
+         * If match_origin_as_fallback is true, then the code is also injected in about:, data:,
+         * blob: when their origin matches the pattern in 'matches', even if the actual document origin is opaque (due to the use
+         * of CSP sandbox or iframe sandbox). Match patterns in 'matches' must specify a wildcard path glob. By default it is <code>
+         * false</code>.
+         * Optional.
+         */
+        match_origin_as_fallback?: boolean;
 
         /**
          * The soonest that the JavaScript or CSS will be injected into the tab. Defaults to "document_idle".
          * Optional.
          */
         run_at?: ExtensionTypes.RunAt;
+
+        /**
+         * The JavaScript world for a script to execute within. Defaults to "ISOLATED".
+         * Optional.
+         */
+        world?: ExtensionTypes.ExecutionWorld;
     }
 
     type IconPath = Record<string, ExtensionFileUrl> | ExtensionFileUrl;
@@ -492,6 +523,7 @@ export namespace Manifest {
         default_popup?: string;
 
         /**
+         * Deprecated in Manifest V3.
          * Optional.
          */
         browser_style?: boolean;
@@ -636,7 +668,10 @@ export namespace Manifest {
         url?: string;
     }
 
-    type WebExtensionManifestIncognitoEnum = "not_allowed" | "spanning";
+    /**
+     * The 'split' value is not supported.
+     */
+    type WebExtensionManifestIncognitoEnum = "not_allowed" | "spanning" | "split";
 
     interface WebExtensionManifestBackgroundC1Type {
         page: ExtensionURL;
@@ -647,8 +682,15 @@ export namespace Manifest {
         persistent?: boolean;
     }
 
+    type WebExtensionManifestBackgroundC2TypeEnum = "module" | "classic";
+
     interface WebExtensionManifestBackgroundC2Type {
         scripts: ExtensionURL[];
+
+        /**
+         * Optional.
+         */
+        type?: WebExtensionManifestBackgroundC2TypeEnum;
 
         /**
          * Optional.
@@ -658,17 +700,26 @@ export namespace Manifest {
 
     interface WebExtensionManifestBackgroundC3Type {
         service_worker: ExtensionURL;
+
+        /**
+         * Even though Manifest V3, does not support multiple background scripts, you can optionally declare the service worker as
+         * an ES Module by specifying "type": "module", which allows you to import further code.
+         * Optional.
+         */
+        type?: "module";
     }
 
     interface WebExtensionManifestOptionsUiType {
         page: ExtensionURL;
 
         /**
+         * Defaults to true in Manifest V2; Deprecated in Manifest V3.
          * Optional.
          */
         browser_style?: boolean;
 
         /**
+         * chrome_style is ignored in Firefox. Its replacement (browser_style) has been deprecated.
          * Optional.
          */
         chrome_style?: boolean;
@@ -699,7 +750,15 @@ export namespace Manifest {
     interface WebExtensionManifestWebAccessibleResourcesC2ItemType {
         resources: string[];
 
-        matches: MatchPatternRestricted[];
+        /**
+         * Optional.
+         */
+        matches?: MatchPattern[];
+
+        /**
+         * Optional.
+         */
+        extension_ids?: Array<ExtensionID | "*">;
     }
 
     interface WebExtensionManifestChromeSettingsOverridesSearchProviderParamsItemType {
@@ -776,11 +835,6 @@ export namespace Manifest {
          * Optional.
          */
         suggest_url_post_params?: string;
-
-        /**
-         * Optional.
-         */
-        search_form?: string;
 
         /**
          * Encoding of the search term.
@@ -863,8 +917,29 @@ export namespace Manifest {
         description?: string;
     }
 
-    interface WebExtensionManifestExperimentApisType extends Experiments.ExperimentAPI {
-        [s: string]: unknown;
+    interface WebExtensionManifestDeclarativeNetRequestRuleResourcesItemType {
+        /**
+         * A non-empty string uniquely identifying the ruleset. IDs beginning with '_' are reserved for internal use.
+         */
+        id: string;
+
+        /**
+         * Whether the ruleset is enabled by default.
+         */
+        enabled: boolean;
+
+        /**
+         * The path of the JSON ruleset relative to the extension directory.
+         */
+        path: ExtensionURL;
+    }
+
+    interface WebExtensionManifestDeclarativeNetRequestType {
+        rule_resources: WebExtensionManifestDeclarativeNetRequestRuleResourcesItemType[];
+    }
+
+    interface WebExtensionManifestExperimentApisType {
+        [s: string]: Experiments.ExperimentAPI;
     }
 
     interface WebExtensionManifestOmniboxType {
@@ -888,6 +963,7 @@ export namespace Manifest {
         default_popup?: string;
 
         /**
+         * Deprecated in Manifest V3.
          * Optional.
          */
         browser_style?: boolean;
@@ -920,6 +996,7 @@ export namespace Manifest {
         default_icon?: IconPath;
 
         /**
+         * Defaults to true in Manifest V2; Deprecated in Manifest V3.
          * Optional.
          */
         browser_style?: boolean;

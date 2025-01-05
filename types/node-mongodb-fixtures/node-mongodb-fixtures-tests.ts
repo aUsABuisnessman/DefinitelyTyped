@@ -1,17 +1,17 @@
-import { MongoClientOptions } from 'mongodb';
-import Fixtures = require('node-mongodb-fixtures');
+import { MongoClientOptions } from "mongodb";
+import Fixtures = require("node-mongodb-fixtures");
 
-const uri = 'mongodb://localhost:27017/mydb';
+const uri = "mongodb://localhost:27017/mydb";
 
 const options: Fixtures.Options = {
-    dir: 'examples/fixtures',
-    filter: 'people.*',
+    dir: "examples/fixtures",
+    filter: "people.*",
     mute: false,
 };
 
 // $ExpectType Fixtures
 const fixtures0 = new Fixtures();
-// $ExpectError
+// @ts-expect-error
 fixtures0.connect();
 
 // $ExpectType Fixtures
@@ -31,7 +31,7 @@ declare const mongoOptions: MongoClientOptions;
 fixtures3.connect(
     uri,
     mongoOptions,
-    'db',
+    "db",
 );
 // $ExpectType Promise<Fixtures>
 fixtures3.load();

@@ -1,11 +1,15 @@
-import { Camera, AnimationClip, FileLoader, Loader, LoadingManager, SkinnedMesh } from '../../../src/Three';
+import { AnimationClip, Camera, FileLoader, Loader, LoadingManager, SkinnedMesh } from "three";
 
 export interface MMDLoaderAnimationObject {
     animation: AnimationClip;
     mesh: SkinnedMesh;
 }
 
-export class MMDLoader extends Loader {
+/**
+ * @deprecated The module has been deprecated and will be removed with r172. Please migrate to
+ * https://github.com/takahirox/three-mmd-loader instead.
+ */
+export class MMDLoader extends Loader<SkinnedMesh> {
     constructor(manager?: LoadingManager);
     animationBuilder: object;
     animationPath: string;
@@ -13,13 +17,6 @@ export class MMDLoader extends Loader {
     meshBuilder: object;
     parser: object | null;
 
-    load(
-        url: string,
-        onLoad: (mesh: SkinnedMesh) => void,
-        onProgress?: (event: ProgressEvent) => void,
-        onError?: (event: ErrorEvent) => void,
-    ): void;
-    loadAsync(url: string, onProgress?: (event: ProgressEvent) => void): Promise<SkinnedMesh>;
     loadAnimation(
         url: string,
         object: SkinnedMesh | Camera,

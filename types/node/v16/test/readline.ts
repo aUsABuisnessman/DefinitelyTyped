@@ -1,41 +1,46 @@
-import * as readline from 'node:readline';
-import * as stream from 'node:stream';
-import * as fs from 'node:fs';
+import * as readline from "node:readline";
+import * as stream from "node:stream";
 
 const rl: readline.ReadLine = readline.createInterface(new stream.Readable());
 
 {
-    const options: readline.ReadLineOptions = {
-        input: new fs.ReadStream()
-    };
     const input: NodeJS.ReadableStream = new stream.Readable();
     const output: NodeJS.WritableStream = new stream.Writable();
-    const completer: readline.Completer = str => [['asd'], 'asd'];
+    const syncCompleter: readline.Completer = function(str) {
+        // $ExpectType string
+        str;
+        return [["test"], "test"];
+    };
+    const asyncCompleter: readline.AsyncCompleter = function(str, callback) {
+        // $ExpectType string
+        str;
+        // $ExpectType (err?: Error | null | undefined, result?: CompleterResult | undefined) => void
+        callback;
+    };
     const terminal = false;
 
     let result: readline.ReadLine;
 
-    result = readline.createInterface(options);
     result = readline.createInterface(input);
     result = readline.createInterface(input, output);
-    result = readline.createInterface(input, output, completer);
-    result = readline.createInterface(input, output, completer, terminal);
-    result = readline.createInterface({
-        input,
-        completer(str: string): readline.CompleterResult {
-            return [['test'], 'test'];
-        }
-    });
-    result = readline.createInterface({
-        input,
-        completer(str: string, callback: (err: any, result: readline.CompleterResult) => void): any {
-            callback(null, [['test'], 'test']);
-        }
-    });
-    result = readline.createInterface({
-        input,
-        tabSize: 4
-    });
+    result = readline.createInterface(input, output, syncCompleter);
+    result = readline.createInterface(input, output, asyncCompleter);
+    result = readline.createInterface(input, output, syncCompleter, terminal);
+    result = readline.createInterface(input, output, asyncCompleter, terminal);
+
+    result = readline.createInterface({ input });
+    result = readline.createInterface({ input, output });
+    result = readline.createInterface({ input, completer: syncCompleter });
+    result = readline.createInterface({ input, completer: asyncCompleter });
+    result = readline.createInterface({ input, terminal });
+    result = readline.createInterface({ input, history: ["foo"] });
+    result = readline.createInterface({ input, historySize: 20 });
+    result = readline.createInterface({ input, removeHistoryDuplicates: true });
+    result = readline.createInterface({ input, prompt: "prompt >" });
+    result = readline.createInterface({ input, crlfDelay: 200 });
+    result = readline.createInterface({ input, escapeCodeTimeout: 200 });
+    result = readline.createInterface({ input, tabSize: 4 });
+    result = readline.createInterface({ input, signal: new AbortSignal() });
 }
 
 {
@@ -77,7 +82,7 @@ const rl: readline.ReadLine = readline.createInterface(new stream.Readable());
     const key: readline.Key = {};
 
     rl.write(data);
-    rl.write('asd', key);
+    rl.write("asd", key);
 }
 
 {
@@ -93,7 +98,7 @@ const rl: readline.ReadLine = readline.createInterface(new stream.Readable());
 
 {
     const data: undefined | null | string | Buffer = null;
-    const key: readline.Key = { ctrl: true, name: 'u' };
+    const key: readline.Key = { ctrl: true, name: "u" };
 
     rl.line; // $ExpectType string
     rl.cursor; // $ExpectType number
@@ -150,15 +155,15 @@ const rl: readline.ReadLine = readline.createInterface(new stream.Readable());
     });
     let _boolean: boolean;
 
-    _rl = _rl.addListener("close", () => { });
+    _rl = _rl.addListener("close", () => {});
     _rl = _rl.addListener("line", (input) => {
         const _input: string = input;
     });
-    _rl = _rl.addListener("pause", () => { });
-    _rl = _rl.addListener("resume", () => { });
-    _rl = _rl.addListener("SIGCONT", () => { });
-    _rl = _rl.addListener("SIGINT", () => { });
-    _rl = _rl.addListener("SIGTSTP", () => { });
+    _rl = _rl.addListener("pause", () => {});
+    _rl = _rl.addListener("resume", () => {});
+    _rl = _rl.addListener("SIGCONT", () => {});
+    _rl = _rl.addListener("SIGINT", () => {});
+    _rl = _rl.addListener("SIGTSTP", () => {});
     _rl = _rl.addListener("history", (history) => {
         const _input: string[] = history;
     });
@@ -172,54 +177,54 @@ const rl: readline.ReadLine = readline.createInterface(new stream.Readable());
     _boolean = _rl.emit("SIGTSTP");
     _boolean = _rl.emit("history");
 
-    _rl = _rl.on("close", () => { });
+    _rl = _rl.on("close", () => {});
     _rl = _rl.on("line", (input) => {
         const _input: string = input;
     });
-    _rl = _rl.on("pause", () => { });
-    _rl = _rl.on("resume", () => { });
-    _rl = _rl.on("SIGCONT", () => { });
-    _rl = _rl.on("SIGINT", () => { });
-    _rl = _rl.on("SIGTSTP", () => { });
+    _rl = _rl.on("pause", () => {});
+    _rl = _rl.on("resume", () => {});
+    _rl = _rl.on("SIGCONT", () => {});
+    _rl = _rl.on("SIGINT", () => {});
+    _rl = _rl.on("SIGTSTP", () => {});
     _rl = _rl.on("history", (history) => {
         const _input: string[] = history;
     });
 
-    _rl = _rl.once("close", () => { });
+    _rl = _rl.once("close", () => {});
     _rl = _rl.once("line", (input) => {
         const _input: string = input;
     });
-    _rl = _rl.once("pause", () => { });
-    _rl = _rl.once("resume", () => { });
-    _rl = _rl.once("SIGCONT", () => { });
-    _rl = _rl.once("SIGINT", () => { });
-    _rl = _rl.once("SIGTSTP", () => { });
+    _rl = _rl.once("pause", () => {});
+    _rl = _rl.once("resume", () => {});
+    _rl = _rl.once("SIGCONT", () => {});
+    _rl = _rl.once("SIGINT", () => {});
+    _rl = _rl.once("SIGTSTP", () => {});
     _rl = _rl.once("history", (history) => {
         const _input: string[] = history;
     });
 
-    _rl = _rl.prependListener("close", () => { });
+    _rl = _rl.prependListener("close", () => {});
     _rl = _rl.prependListener("line", (input) => {
         const _input: string = input;
     });
-    _rl = _rl.prependListener("pause", () => { });
-    _rl = _rl.prependListener("resume", () => { });
-    _rl = _rl.prependListener("SIGCONT", () => { });
-    _rl = _rl.prependListener("SIGINT", () => { });
-    _rl = _rl.prependListener("SIGTSTP", () => { });
+    _rl = _rl.prependListener("pause", () => {});
+    _rl = _rl.prependListener("resume", () => {});
+    _rl = _rl.prependListener("SIGCONT", () => {});
+    _rl = _rl.prependListener("SIGINT", () => {});
+    _rl = _rl.prependListener("SIGTSTP", () => {});
     _rl = _rl.prependListener("history", (history) => {
         const _input: string[] = history;
     });
 
-    _rl = _rl.prependOnceListener("close", () => { });
+    _rl = _rl.prependOnceListener("close", () => {});
     _rl = _rl.prependOnceListener("line", (input) => {
         const _input: string = input;
     });
-    _rl = _rl.prependOnceListener("pause", () => { });
-    _rl = _rl.prependOnceListener("resume", () => { });
-    _rl = _rl.prependOnceListener("SIGCONT", () => { });
-    _rl = _rl.prependOnceListener("SIGINT", () => { });
-    _rl = _rl.prependOnceListener("SIGTSTP", () => { });
+    _rl = _rl.prependOnceListener("pause", () => {});
+    _rl = _rl.prependOnceListener("resume", () => {});
+    _rl = _rl.prependOnceListener("SIGCONT", () => {});
+    _rl = _rl.prependOnceListener("SIGINT", () => {});
+    _rl = _rl.prependOnceListener("SIGTSTP", () => {});
     _rl = _rl.prependOnceListener("history", (history) => {
         const _input: string[] = history;
     });
