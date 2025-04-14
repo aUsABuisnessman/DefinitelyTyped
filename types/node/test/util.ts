@@ -421,6 +421,49 @@ const errorMap: Map<number, [string, string]> = util.getSystemErrorMap();
 }
 
 {
+    let optionConfig: util.ParseArgsOptionDescriptor;
+
+    optionConfig = {
+        type: "boolean",
+    };
+
+    optionConfig = {
+        default: "default",
+        multiple: false,
+        short: "s",
+        type: "string",
+    };
+
+    optionConfig = {
+        default: ["a", "b", "c"],
+        multiple: true,
+        type: "string",
+    };
+
+    util.parseArgs({
+        options: {
+            longOption: optionConfig,
+        },
+    });
+
+    let optionsConfig: util.ParseArgsOptionsConfig;
+
+    optionsConfig = {};
+
+    optionsConfig = {
+        longOption: optionConfig,
+    };
+
+    util.parseArgs(optionsConfig);
+}
+
+{
+    let argsType: util.ParseArgsOptionsType;
+    argsType = "boolean";
+    argsType = "string";
+}
+
+{
     const controller: AbortController = util.transferableAbortController();
     const signal: AbortSignal = util.transferableAbortSignal(controller.signal);
     util.aborted(signal, {}).then(() => {});
@@ -458,7 +501,8 @@ const errorMap: Map<number, [string, string]> = util.getSystemErrorMap();
         console.log(`CallSite ${index + 1}:`);
         console.log(`Function Name: ${callSite.functionName}`);
         console.log(`Script Name: ${callSite.scriptName}`);
+        console.log(`Script ID: ${callSite.scriptId}`);
         console.log(`Line Number: ${callSite.lineNumber}`);
-        console.log(`Column Number: ${callSite.column}`);
+        console.log(`Column Number: ${callSite.columnNumber}`);
     });
 }
