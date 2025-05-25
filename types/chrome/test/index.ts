@@ -320,20 +320,116 @@ function proxySettings() {
     chrome.proxy.settings.onChange.hasListeners(); // $ExpectType boolean
 }
 
-function testNotificationCreation() {
+// https://developer.chrome.com/docs/extensions/reference/api/notifications
+function testNotification() {
+    chrome.notifications.PermissionLevel.DENIED === "denied";
+    chrome.notifications.PermissionLevel.GRANTED === "granted";
+
+    chrome.notifications.TemplateType.BASIC === "basic";
+    chrome.notifications.TemplateType.IMAGE === "image";
+    chrome.notifications.TemplateType.LIST === "list";
+    chrome.notifications.TemplateType.PROGRESS === "progress";
+
+    const notificationId = "2199ce04-c5ca-4651-a8a9-5f4afd4c5a05";
+
+    chrome.notifications.clear(notificationId); // $ExpectType Promise<boolean>
+    chrome.notifications.clear(notificationId, (wasCleared) => { // $ExpectType void
+        wasCleared; // $ExpectType boolean
+    });
     // @ts-expect-error
-    chrome.notifications.create("id", {});
+    chrome.notifications.clear(notificationId, () => {}).then(() => {});
+
+    const notificationCreateOptions: chrome.notifications.NotificationCreateOptions = {
+        title: "Title",
+        message: "Message",
+        iconUrl: "https://fakeimg.pl/300",
+        type: "basic",
+    };
+
+    chrome.notifications.create(notificationId, notificationCreateOptions); // $ExpectType Promise<string>
+    chrome.notifications.create(notificationId, notificationCreateOptions, (notificationId) => { // $ExpectType void
+        notificationId; // $ExpectType string
+    });
+    // @ts-expect-error Some of the required properties are missing: type, iconUrl, title and message.
+    chrome.notifications.create(notificationId, {});
     // @ts-expect-error
-    chrome.notifications.create("id", { message: "", type: "", title: "" });
+    chrome.notifications.create(notificationId, notificationCreateOptions, () => {}).then(() => {});
+
+    chrome.notifications.getAll(); // $ExpectType Promise<{ [key: string]: true }>
+    chrome.notifications.getAll((notifications) => { // $ExpectType void
+        notifications; // $ExpectType { [key: string]: true }
+    });
     // @ts-expect-error
-    chrome.notifications.create("id", { iconUrl: "", type: "", title: "" });
+    chrome.notifications.getAll(() => {}).then(() => {});
+
+    chrome.notifications.getPermissionLevel(); // $ExpectType Promise<"denied" | "granted">
+    chrome.notifications.getPermissionLevel((permissionLevel) => { // $ExpectType void
+        permissionLevel; // $ExpectType "denied" | "granted"
+    });
     // @ts-expect-error
-    chrome.notifications.create("id", { iconUrl: "", message: "", title: "" });
+    chrome.notifications.getPermissionLevel(() => {}).then(() => {});
+
+    chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => { // $ExpectType void
+        notificationId; // $ExpectType string
+        buttonIndex; // $ExpectType number
+    });
+    chrome.notifications.onButtonClicked.removeListener((notificationId, buttonIndex) => { // $ExpectType void
+        notificationId; // $ExpectType string
+        buttonIndex; // $ExpectType number
+    });
+    chrome.notifications.onButtonClicked.hasListener((notificationId, buttonIndex) => { // $ExpectType boolean
+        notificationId; // $ExpectType string
+        buttonIndex; // $ExpectType number
+    });
+    chrome.notifications.onButtonClicked.hasListeners(); // $ExpectType boolean
+
+    chrome.notifications.onClicked.addListener((notificationId) => { // $ExpectType void
+        notificationId; // $ExpectType string
+    });
+    chrome.notifications.onClicked.removeListener((notificationId) => { // $ExpectType void
+        notificationId; // $ExpectType string
+    });
+    chrome.notifications.onClicked.hasListener((notificationId) => { // $ExpectType boolean
+        notificationId; // $ExpectType string
+    });
+    chrome.notifications.onClicked.hasListeners(); // $ExpectType boolean
+
+    chrome.notifications.onClosed.addListener((notificationId, byUser) => { // $ExpectType void
+        notificationId; // $ExpectType string
+        byUser; // $ExpectType boolean
+    });
+    chrome.notifications.onClosed.removeListener((notificationId, byUser) => { // $ExpectType void
+        notificationId; // $ExpectType string
+        byUser; // $ExpectType boolean
+    });
+    chrome.notifications.onClosed.hasListener((notificationId, byUser) => { // $ExpectType boolean
+        notificationId; // $ExpectType string
+        byUser; // $ExpectType boolean
+    });
+    chrome.notifications.onClosed.hasListeners(); // $ExpectType boolean
+
+    chrome.notifications.onPermissionLevelChanged.addListener((permissionLevel) => { // $ExpectType void
+        permissionLevel; // $ExpectType "denied" | "granted"
+    });
+    chrome.notifications.onPermissionLevelChanged.removeListener((permissionLevel) => { // $ExpectType void
+        permissionLevel; // $ExpectType "denied" | "granted"
+    });
+    chrome.notifications.onPermissionLevelChanged.hasListener((permissionLevel) => { // $ExpectType boolean
+        permissionLevel; // $ExpectType "denied" | "granted"
+    });
+    chrome.notifications.onPermissionLevelChanged.hasListeners(); // $ExpectType boolean
+
+    chrome.notifications.onShowSettings.addListener(() => {}); // $ExpectType void
+    chrome.notifications.onShowSettings.removeListener(() => {}); // $ExpectType void
+    chrome.notifications.onShowSettings.hasListener(() => {}); // $ExpectType boolean
+    chrome.notifications.onShowSettings.hasListeners(); // $ExpectType boolean
+
+    chrome.notifications.update(notificationId, {}); // $ExpectType Promise<boolean>
+    chrome.notifications.update(notificationId, {}, (wasUpdated) => { // $ExpectType void
+        wasUpdated; // $ExpectType boolean
+    });
     // @ts-expect-error
-    chrome.notifications.create("id", { iconUrl: "", message: "", type: "" });
-    // @ts-expect-error
-    chrome.notifications.create("id", { iconUrl: "", message: "", type: "", title: "" });
-    chrome.notifications.create("id", { iconUrl: "", message: "", type: "basic", title: "" });
+    chrome.notifications.update(notificationId, {}, () => {}).then(() => {});
 }
 
 // https://developer.chrome.com/docs/extensions/reference/api/contentSettings
@@ -680,33 +776,6 @@ async function testTabInterface() {
     tab.sessionId; // $ExpectType string | undefined
 }
 
-// tabGroups: https://developer.chrome.com/extensions/tabGroups#
-async function testTabGroupInterface() {
-    const options = { collapsed: false, title: "Test" };
-
-    chrome.tabGroups.query(options, tabGroups => {
-        // $ExpectType TabGroup[]
-        tabGroups;
-
-        const [tabGroup] = tabGroups;
-        tabGroup.collapsed; // $ExpectType boolean
-        tabGroup.color; // $ExpectType ColorEnum
-        tabGroup.id; // $ExpectType number
-        tabGroup.title; // $ExpectType string | undefined
-        tabGroup.windowId; // $ExpectType number
-
-        tabGroup.color = "grey";
-        tabGroup.color = "blue";
-        tabGroup.color = "red";
-        tabGroup.color = "yellow";
-        tabGroup.color = "green";
-        tabGroup.color = "pink";
-        tabGroup.color = "purple";
-        tabGroup.color = "cyan";
-        tabGroup.color = "orange";
-    });
-}
-
 // https://developer.chrome.com/extensions/runtime#method-openOptionsPage
 function testOptionsPage() {
     chrome.runtime.openOptionsPage();
@@ -947,9 +1016,9 @@ function testDebugger() {
         sessionId: "123",
     };
 
-    chrome.debugger.sendCommand(debuggerSession, "Debugger.Cmd", {}); // $ExpectType Promise<Object | undefined>
+    chrome.debugger.sendCommand(debuggerSession, "Debugger.Cmd", {}); // $ExpectType Promise<object | undefined>
     chrome.debugger.sendCommand(debuggerSession, "Debugger.Cmd", {}, (result) => { // $ExpectType void
-        result; // $ExpectType Object | undefined
+        result; // $ExpectType object | undefined
     });
     // @ts-expect-error
     chrome.debugger.sendCommand(debuggerSession, "Debugger.Cmd", {}, () => {}).then(() => {});
@@ -957,17 +1026,17 @@ function testDebugger() {
     chrome.debugger.onEvent.addListener((source, methodName, params) => { // $ExpectType void
         source; // $ExpectType DebuggerSession
         methodName; // $ExpectType string
-        params; // $ExpectType Object | undefined
+        params; // $ExpectType object | undefined
     });
     chrome.debugger.onEvent.removeListener((source, methodName, params) => { // $ExpectType void
         source; // $ExpectType DebuggerSession
         methodName; // $ExpectType string
-        params; // $ExpectType Object | undefined
+        params; // $ExpectType object | undefined
     });
     chrome.debugger.onEvent.hasListener((source, methodName, params) => { // $ExpectType boolean
         source; // $ExpectType DebuggerSession
         methodName; // $ExpectType string
-        params; // $ExpectType Object | undefined
+        params; // $ExpectType object | undefined
     });
     chrome.debugger.onEvent.hasListeners(); // $ExpectType boolean
 
@@ -1423,6 +1492,11 @@ function testDevtools() {
     };
     chrome.devtools.recorder.registerRecorderExtensionPlugin({}, "MyPlugin", "application/json"); // $ExpectType void
     chrome.devtools.recorder.registerRecorderExtensionPlugin(plugin, "MyPlugin", "application/json"); // $ExpectType void
+
+    chrome.devtools.panels.setOpenResourceHandler((resource, lineNumber) => { // $ExpectType void
+        resource; // $ExpectType Resource
+        lineNumber; // $ExpectType number
+    });
 }
 
 function testAssistiveWindow() {
@@ -2619,12 +2693,109 @@ async function testTabs() {
     chrome.tabs.onZoomChange.hasListeners(); // $ExpectType boolean
 }
 
-// https://developer.chrome.com/docs/extensions/reference/tabGroups
-async function testTabGroupsForPromise() {
-    await chrome.tabGroups.get(0);
-    await chrome.tabGroups.move(0, { index: 0 });
-    await chrome.tabGroups.query({});
-    await chrome.tabGroups.update(0, {});
+// https://developer.chrome.com/docs/extensions/reference/api/tabGroups
+async function testTabGroup() {
+    chrome.tabGroups.Color.BLUE === "blue";
+    chrome.tabGroups.Color.CYAN === "cyan";
+    chrome.tabGroups.Color.GREEN === "green";
+    chrome.tabGroups.Color.GREY === "grey";
+    chrome.tabGroups.Color.ORANGE === "orange";
+    chrome.tabGroups.Color.PINK === "pink";
+    chrome.tabGroups.Color.PURPLE === "purple";
+    chrome.tabGroups.Color.RED === "red";
+    chrome.tabGroups.Color.YELLOW === "yellow";
+
+    chrome.tabGroups.TAB_GROUP_ID_NONE === -1;
+
+    const groupId = 1;
+
+    chrome.tabGroups.get(groupId); // $ExpectType Promise<TabGroup>
+    chrome.tabGroups.get(groupId, (group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    // @ts-expect-error
+    chrome.tabGroups.get(() => {}).then(() => {});
+
+    const moveProperties: chrome.tabGroups.MoveProperties = {
+        index: 0,
+        windowId: 0,
+    };
+
+    chrome.tabGroups.move(groupId, moveProperties); // $ExpectType Promise<TabGroup | undefined>
+    chrome.tabGroups.move(groupId, moveProperties, (group) => { // $ExpectType void
+        group; // $ExpectType TabGroup | undefined
+    });
+    // @ts-expect-error
+    chrome.tabGroups.move(() => {}).then(() => {});
+
+    const queryInfo: chrome.tabGroups.QueryInfo = {
+        collapsed: false,
+        title: "Test",
+    };
+
+    chrome.tabGroups.query(queryInfo); // $ExpectType Promise<TabGroup[]>
+    chrome.tabGroups.query(queryInfo, (groups) => { // $ExpectType void
+        groups; // $ExpectType TabGroup[]
+    });
+    // @ts-expect-error
+    chrome.tabGroups.query(() => {}).then(() => {});
+
+    const updateProperties: chrome.tabGroups.UpdateProperties = {
+        collapsed: false,
+        title: "Test",
+        color: "blue",
+    };
+
+    chrome.tabGroups.update(groupId, updateProperties); // $ExpectType Promise<TabGroup | undefined>
+    chrome.tabGroups.update(groupId, updateProperties, (group) => { // $ExpectType void
+        group; // $ExpectType TabGroup | undefined
+    });
+    // @ts-expect-error
+    chrome.tabGroups.update(() => {}).then(() => {});
+
+    chrome.tabGroups.onCreated.addListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onCreated.removeListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onCreated.hasListener((group) => { // $ExpectType boolean
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onCreated.hasListeners(); // $ExpectType boolean
+
+    chrome.tabGroups.onMoved.addListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onMoved.removeListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onMoved.hasListener((group) => { // $ExpectType boolean
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onMoved.hasListeners(); // $ExpectType boolean
+
+    chrome.tabGroups.onRemoved.addListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onRemoved.removeListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onRemoved.hasListener((group) => { // $ExpectType boolean
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onRemoved.hasListeners(); // $ExpectType boolean
+
+    chrome.tabGroups.onUpdated.addListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onUpdated.removeListener((group) => { // $ExpectType void
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onUpdated.hasListener((group) => { // $ExpectType boolean
+        group; // $ExpectType TabGroup
+    });
+    chrome.tabGroups.onUpdated.hasListeners(); // $ExpectType boolean
 }
 
 // https://developer.chrome.com/docs/extensions/reference/windows
@@ -2935,8 +3106,8 @@ function testRuntimeSendMessage() {
 }
 
 function testRuntimeSendNativeMessage() {
-    chrome.runtime.sendNativeMessage("application", console.log).then(() => {});
-    chrome.runtime.sendNativeMessage("application", console.log, (num: number) => alert(num + 1));
+    chrome.runtime.sendNativeMessage("application", {}).then(() => {});
+    chrome.runtime.sendNativeMessage("application", {}, (num: number) => alert(num + 1));
 }
 
 function testTabsSendRequest() {
@@ -4589,6 +4760,13 @@ function testPrinting() {
     // @ts-expect-error
     chrome.printing.cancelJob("", () => {}).then(() => {});
 
+    chrome.printing.getJobStatus(""); // $ExpectType Promise<"PENDING" | "IN_PROGRESS" | "FAILED" | "CANCELED" | "PRINTED">
+    chrome.printing.getJobStatus("", status => { // $ExpectType void
+        status; // $ExpectType "PENDING" | "IN_PROGRESS" | "FAILED" | "CANCELED" | "PRINTED"
+    });
+    // @ts-expect-error
+    chrome.printing.getJobStatus("", status => {}).then(status => {});
+
     chrome.printing.getPrinterInfo(""); // $ExpectType Promise<GetPrinterInfoResponse>
     chrome.printing.getPrinterInfo("", response => {}); // $ExpectType void
     // @ts-expect-error
@@ -4615,15 +4793,15 @@ function testPrinting() {
 
     chrome.printing.onJobStatusChanged.addListener((jobId, status) => {
         jobId; // $ExpectType string
-        status; // $ExpectType JobStatus
+        status; // $ExpectType "PENDING" | "IN_PROGRESS" | "FAILED" | "CANCELED" | "PRINTED"
     });
     chrome.printing.onJobStatusChanged.removeListener((jobId, status) => {
         jobId; // $ExpectType string
-        status; // $ExpectType JobStatus
+        status; // $ExpectType "PENDING" | "IN_PROGRESS" | "FAILED" | "CANCELED" | "PRINTED"
     });
     chrome.printing.onJobStatusChanged.hasListener((jobId, status) => {
         jobId; // $ExpectType string
-        status; // $ExpectType JobStatus
+        status; // $ExpectType "PENDING" | "IN_PROGRESS" | "FAILED" | "CANCELED" | "PRINTED"
     });
     chrome.printing.onJobStatusChanged.hasListeners();
 }

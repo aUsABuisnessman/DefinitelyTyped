@@ -2,6 +2,9 @@
 /// <reference path="./har-format/index.d.ts" />
 /// <reference path="./chrome-cast/index.d.ts" />
 
+// Helpers
+type SetRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
 ////////////////////
 // Global object
 ////////////////////
@@ -1180,7 +1183,7 @@ declare namespace chrome {
         /**
          * Sets the icon for the browser action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element, or as dictionary of either one of those. Either the path or the imageData property must be specified.
          */
-        export function setIcon(details: TabIconDetails, callback?: Function): void;
+        export function setIcon(details: TabIconDetails, callback?: () => void): void;
 
         /** Fired when a browser action icon is clicked. This event will not fire if the browser action has a popup. */
         export var onClicked: BrowserClickedEvent;
@@ -2355,13 +2358,13 @@ declare namespace chrome {
         export function sendCommand(
             target: DebuggerSession,
             method: string,
-            commandParams?: Object,
-        ): Promise<Object | undefined>;
+            commandParams?: { [key: string]: unknown },
+        ): Promise<object | undefined>;
         export function sendCommand(
             target: DebuggerSession,
             method: string,
-            commandParams?: Object,
-            callback?: (result?: Object) => void,
+            commandParams?: { [key: string]: unknown },
+            callback?: (result?: object) => void,
         ): void;
 
         /**
@@ -2375,7 +2378,7 @@ declare namespace chrome {
         /** Fired when browser terminates debugging session for the tab. This happens when either the tab is being closed or Chrome DevTools is being invoked for the attached tab. */
         export const onDetach: chrome.events.Event<(source: Debuggee, reason: `${DetachReason}`) => void>;
         /** Fired whenever debugging target issues instrumentation event. */
-        export const onEvent: chrome.events.Event<(source: DebuggerSession, method: string, params?: Object) => void>;
+        export const onEvent: chrome.events.Event<(source: DebuggerSession, method: string, params?: object) => void>;
     }
 
     export { _debugger as debugger };
@@ -2585,7 +2588,7 @@ declare namespace chrome {
             filter: RequestCookie;
         }
 
-        export interface RequestedEvent extends chrome.events.Event<Function> {}
+        export interface RequestedEvent extends chrome.events.Event<() => void> {}
 
         export var onRequest: RequestedEvent;
     }
@@ -2669,7 +2672,7 @@ declare namespace chrome {
                     /**
                      * Set to undefined if the resource content was set successfully; describes error otherwise.
                      */
-                    error?: Object,
+                    error?: object,
                 ) => void,
             ): void;
         }
@@ -2942,13 +2945,13 @@ declare namespace chrome {
              * @param rootTitle An optional title for the root of the expression tree.
              * @param callback A callback invoked after the sidebar is updated with the object.
              */
-            setObject(jsonObject: Object, rootTitle?: string, callback?: () => void): void;
+            setObject(jsonObject: { [key: string]: unknown }, rootTitle?: string, callback?: () => void): void;
             /**
              * Sets a JSON-compliant object to be displayed in the sidebar pane.
              * @param jsonObject An object to be displayed in context of the inspected page. Evaluated in the context of the caller (API client).
              * @param callback A callback invoked after the sidebar is updated with the object.
              */
-            setObject(jsonObject: Object, callback?: () => void): void;
+            setObject(jsonObject: { [key: string]: unknown }, callback?: () => void): void;
             /**
              * Sets an HTML page to be displayed in the sidebar pane.
              * @param path Relative path of an extension page to display within the sidebar.
@@ -2986,9 +2989,10 @@ declare namespace chrome {
          * Specifies the function to be called when the user clicks a resource link in the Developer Tools window. To unset the handler, either call the method with no parameters or pass null as the parameter.
          * @param callback A function that is called when the user clicks on a valid resource link in Developer Tools window. Note that if the user clicks an invalid URL or an XHR, this function is not called.
          * Parameter resource: A devtools.inspectedWindow.Resource object for the resource that was clicked.
+         * Parameter lineNumber: Specifies the line number within the resource that was clicked.
          */
         export function setOpenResourceHandler(
-            callback?: (resource: chrome.devtools.inspectedWindow.Resource) => void,
+            callback?: (resource: chrome.devtools.inspectedWindow.Resource, lineNumber: number) => void,
         ): void;
         /**
          * @since Chrome 38
@@ -3035,19 +3039,19 @@ declare namespace chrome {
              * @param recording A recording of the user interaction with the page. This should match [Puppeteer's recording schema](https://github.com/puppeteer/replay/blob/main/docs/api/interfaces/Schema.UserFlow.md).
              * @since Chrome 112
              */
-            replay?(recording: object): void;
+            replay?(recording: { [key: string]: unknown }): void;
 
             /**
              * Converts a recording from the Recorder panel format into a string.
              * @param recording A recording of the user interaction with the page. This should match [Puppeteer's recording schema](https://github.com/puppeteer/replay/blob/main/docs/api/interfaces/Schema.UserFlow.md).
              */
-            stringify?(recording: object): void;
+            stringify?(recording: { [key: string]: unknown }): void;
 
             /**
              * Converts a step of the recording from the Recorder panel format into a string.
              * @param step A step of the recording of a user interaction with the page. This should match [Puppeteer's step schema](https://github.com/puppeteer/replay/blob/main/docs/api/modules/Schema.md#step).
              */
-            stringifyStep?(step: object): void;
+            stringifyStep?(step: { [key: string]: unknown }): void;
         }
 
         /**
@@ -4291,7 +4295,7 @@ declare namespace chrome {
             originAndPathMatches?: string | undefined;
         }
 
-        export interface Event<T extends Function> {
+        export interface Event<T extends (...args: any) => void> {
             /**
              * Registers an event listener callback to an event.
              * @param callback Called when an event occurs. The parameters of this function depend on the type of event.
@@ -4516,7 +4520,7 @@ declare namespace chrome {
 
         export interface SelectionResult {
             /** Optional. Selected file entry. It will be null if a file hasn't been selected.  */
-            entry?: Object | null | undefined;
+            entry?: object | null | undefined;
             /** Whether the file has been selected. */
             success: boolean;
         }
@@ -5397,7 +5401,7 @@ declare namespace chrome {
         /**
          * Sets the default font size.
          */
-        export function setDefaultFontSize(details: DefaultFontSizeDetails, callback: Function): void;
+        export function setDefaultFontSize(details: DefaultFontSizeDetails, callback: () => void): void;
         /**
          * Gets the font for a given script and generic font family.
          * @return The `getFont` method provides its result via callback or returned as a `Promise` (MV3 only).
@@ -5412,25 +5416,25 @@ declare namespace chrome {
          * @param details This parameter is currently unused.
          * @return The `getDefaultFontSize` method provides its result via callback or returned as a `Promise` (MV3 only).
          */
-        export function getDefaultFontSize(details?: Object): Promise<FontSizeDetails>;
+        export function getDefaultFontSize(details?: unknown): Promise<FontSizeDetails>;
         /**
          * Gets the default font size.
          * @param details This parameter is currently unused.
          */
         export function getDefaultFontSize(callback: (options: FontSizeDetails) => void): void;
-        export function getDefaultFontSize(details: Object, callback: (options: FontSizeDetails) => void): void;
+        export function getDefaultFontSize(details: unknown, callback: (options: FontSizeDetails) => void): void;
         /**
          * Gets the minimum font size.
          * @param details This parameter is currently unused.
          * @return The `getMinimumFontSize` method provides its result via callback or returned as a `Promise` (MV3 only).
          */
-        export function getMinimumFontSize(details?: object): Promise<FontSizeDetails>;
+        export function getMinimumFontSize(details?: unknown): Promise<FontSizeDetails>;
         /**
          * Gets the minimum font size.
          * @param details This parameter is currently unused.
          */
         export function getMinimumFontSize(callback: (options: FontSizeDetails) => void): void;
-        export function getMinimumFontSize(details: object, callback: (options: FontSizeDetails) => void): void;
+        export function getMinimumFontSize(details: unknown, callback: (options: FontSizeDetails) => void): void;
         /**
          * Sets the minimum font size.
          * @return The `setMinimumFontSize` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
@@ -5439,31 +5443,31 @@ declare namespace chrome {
         /**
          * Sets the minimum font size.
          */
-        export function setMinimumFontSize(details: SetFontSizeDetails, callback: Function): void;
+        export function setMinimumFontSize(details: SetFontSizeDetails, callback: () => void): void;
         /**
          * Gets the default size for fixed width fonts.
          * @param details This parameter is currently unused.
          * @return The `getDefaultFixedFontSize` method provides its result via callback or returned as a `Promise` (MV3 only).
          */
-        export function getDefaultFixedFontSize(details?: Object): Promise<FontSizeDetails>;
+        export function getDefaultFixedFontSize(details?: unknown): Promise<FontSizeDetails>;
         /**
          * Gets the default size for fixed width fonts.
          * @param details This parameter is currently unused.
          */
         export function getDefaultFixedFontSize(callback: (details: FontSizeDetails) => void): void;
-        export function getDefaultFixedFontSize(details: Object, callback: (details: FontSizeDetails) => void): void;
+        export function getDefaultFixedFontSize(details: unknown, callback: (details: FontSizeDetails) => void): void;
         /**
          * Clears the default font size set by this extension, if any.
          * @param details This parameter is currently unused.
          * @return The `clearDefaultFontSize` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
          */
-        export function clearDefaultFontSize(details?: Object): Promise<void>;
+        export function clearDefaultFontSize(details?: unknown): Promise<void>;
         /**
          * Clears the default font size set by this extension, if any.
          * @param details This parameter is currently unused.
          */
-        export function clearDefaultFontSize(callback: Function): void;
-        export function clearDefaultFontSize(details: Object, callback: Function): void;
+        export function clearDefaultFontSize(callback: () => void): void;
+        export function clearDefaultFontSize(details: unknown, callback: () => void): void;
         /**
          * Sets the default size for fixed width fonts.
          * @return The `setDefaultFixedFontSize` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
@@ -5472,7 +5476,7 @@ declare namespace chrome {
         /**
          * Sets the default size for fixed width fonts.
          */
-        export function setDefaultFixedFontSize(details: SetFontSizeDetails, callback: Function): void;
+        export function setDefaultFixedFontSize(details: SetFontSizeDetails, callback: () => void): void;
         /**
          * Clears the font set by this extension, if any.
          * @return The `clearFont` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
@@ -5481,7 +5485,7 @@ declare namespace chrome {
         /**
          * Clears the font set by this extension, if any.
          */
-        export function clearFont(details: FontDetails, callback: Function): void;
+        export function clearFont(details: FontDetails, callback: () => void): void;
         /**
          * Sets the font for a given script and generic font family.
          * @return The `setFont` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
@@ -5490,19 +5494,19 @@ declare namespace chrome {
         /**
          * Sets the font for a given script and generic font family.
          */
-        export function setFont(details: SetFontDetails, callback: Function): void;
+        export function setFont(details: SetFontDetails, callback: () => void): void;
         /**
          * Clears the minimum font size set by this extension, if any.
          * @param details This parameter is currently unused.
          * @return The `clearMinimumFontSize` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
          */
-        export function clearMinimumFontSize(details?: Object): Promise<void>;
+        export function clearMinimumFontSize(details?: unknown): Promise<void>;
         /**
          * Clears the minimum font size set by this extension, if any.
          * @param details This parameter is currently unused.
          */
-        export function clearMinimumFontSize(callback: Function): void;
-        export function clearMinimumFontSize(details: Object, callback: Function): void;
+        export function clearMinimumFontSize(callback: () => void): void;
+        export function clearMinimumFontSize(details: unknown, callback: () => void): void;
         /**
          * Gets a list of fonts on the system.
          * @return The `getFontList` method provides its result via callback or returned as a `Promise` (MV3 only).
@@ -5517,12 +5521,12 @@ declare namespace chrome {
          * @param details This parameter is currently unused.
          * @return The `clearDefaultFixedFontSize` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
          */
-        export function clearDefaultFixedFontSize(details: Object): Promise<void>;
+        export function clearDefaultFixedFontSize(details: unknown): Promise<void>;
         /**
          * Clears the default fixed font size set by this extension, if any.
          * @param details This parameter is currently unused.
          */
-        export function clearDefaultFixedFontSize(details: Object, callback: Function): void;
+        export function clearDefaultFixedFontSize(details: unknown, callback: () => void): void;
 
         /** Fired when the default fixed font size setting changes. */
         export var onDefaultFixedFontSizeChanged: DefaultFixedFontSizeChangedEvent;
@@ -5551,12 +5555,12 @@ declare namespace chrome {
             /** Optional. Time-to-live of the message in seconds. If it is not possible to send the message within that time, an onSendError event will be raised. A time-to-live of 0 indicates that the message should be sent immediately or fail if it's not possible. The maximum and a default value of time-to-live is 86400 seconds (1 day). */
             timeToLive?: number | undefined;
             /** Message data to send to the server. Case-insensitive goog. and google, as well as case-sensitive collapse_key are disallowed as key prefixes. Sum of all key/value pairs should not exceed gcm.MAX_MESSAGE_SIZE. */
-            data: Object;
+            data: { [key: string]: unknown };
         }
 
         export interface IncomingMessage {
             /** The message data. */
-            data: Object;
+            data: { [key: string]: unknown };
             /**
              * Optional.
              * The sender who issued the message.
@@ -5576,7 +5580,7 @@ declare namespace chrome {
             /** Optional. The ID of the message with this error, if error is related to a specific message. */
             messageId?: string | undefined;
             /** Additional details related to the error, when available. */
-            detail: Object;
+            detail: object;
         }
 
         export interface MessageReceptionEvent extends chrome.events.Event<(message: IncomingMessage) => void> {}
@@ -6245,7 +6249,7 @@ declare namespace chrome {
         }
 
         export interface MenuItemParameters {
-            items: Object[];
+            items: MenuItem[];
             engineId: string;
         }
 
@@ -7018,181 +7022,177 @@ declare namespace chrome {
      * Permissions: "notifications"
      */
     export namespace notifications {
-        export type TemplateType = "basic" | "image" | "list" | "progress";
-
-        export interface ButtonOptions {
+        export interface NotificationButton {
+            /** @deprecated since Chrome 59. Button icons not visible for Mac OS X users. */
+            iconUrl?: string;
             title: string;
-            iconUrl?: string | undefined;
         }
 
-        export interface ItemOptions {
-            /** Title of one item of a list notification. */
-            title: string;
+        export interface NotificationItem {
             /** Additional details about this item. */
             message: string;
+            /** Title of one item of a list notification. */
+            title: string;
         }
 
-        export type NotificationOptions<T extends boolean = false> =
-            & {
-                /**
-                 * Optional.
-                 * Alternate notification content with a lower-weight font.
-                 * @since Chrome 31
-                 */
-                contextMessage?: string | undefined;
-                /** Optional. Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero is default. */
-                priority?: number | undefined;
-                /** Optional. A timestamp associated with the notification, in milliseconds past the epoch (e.g. Date.now() + n). */
-                eventTime?: number | undefined;
-                /** Optional. Text and icons for up to two notification action buttons. */
-                buttons?: ButtonOptions[] | undefined;
-                /** Optional. Items for multi-item notifications. */
-                items?: ItemOptions[] | undefined;
-                /**
-                 * Optional.
-                 * Current progress ranges from 0 to 100.
-                 * @since Chrome 30
-                 */
-                progress?: number | undefined;
-                /**
-                 * Optional.
-                 * Whether to show UI indicating that the app will visibly respond to clicks on the body of a notification.
-                 * @since Chrome 32
-                 */
-                isClickable?: boolean | undefined;
-                /**
-                 * Optional.
-                 * A URL to the app icon mask. URLs have the same restrictions as iconUrl. The app icon mask should be in alpha channel, as only the alpha channel of the image will be considered.
-                 * @since Chrome 38
-                 */
-                appIconMaskUrl?: string | undefined;
-                /** Optional. A URL to the image thumbnail for image-type notifications. URLs have the same restrictions as iconUrl. */
-                imageUrl?: string | undefined;
-                /**
-                 * Indicates that the notification should remain visible on screen until the user activates or dismisses the notification.
-                 * This defaults to false.
-                 * @since Chrome 50
-                 */
-                requireInteraction?: boolean | undefined;
-                /**
-                 * Optional.
-                 * Indicates that no sounds or vibrations should be made when the notification is being shown. This defaults to false.
-                 * @since Chrome 70
-                 */
-                silent?: boolean | undefined;
-            }
-            & (T extends true ? {
-                    /**
-                     * A URL to the sender's avatar, app icon, or a thumbnail for image notifications.
-                     * URLs can be a data URL, a blob URL, or a URL relative to a resource within this extension's .crx file. Required for notifications.create method.
-                     */
-                    iconUrl: string;
-                    /** Main notification content. Required for notifications.create method. */
-                    message: string;
-                    /** Which type of notification to display. Required for notifications.create method. */
-                    type: TemplateType;
-                    /** Title of the notification (e.g. sender name for email). Required for notifications.create method. */
-                    title: string;
-                }
-                : {
-                    /**
-                     * Optional.
-                     * A URL to the sender's avatar, app icon, or a thumbnail for image notifications.
-                     * URLs can be a data URL, a blob URL, or a URL relative to a resource within this extension's .crx file. Required for notifications.create method.
-                     */
-                    iconUrl?: string | undefined;
-                    /** Optional. Main notification content. Required for notifications.create method. */
-                    message?: string | undefined;
-                    /** Optional. Which type of notification to display. Required for notifications.create method. */
-                    type?: TemplateType | undefined;
-                    /** Optional. Title of the notification (e.g. sender name for email). Required for notifications.create method. */
-                    title?: string | undefined;
-                });
+        export interface NotificationOptions {
+            /**
+             * A URL to the app icon mask. URLs have the same restrictions as {@link notifications.NotificationOptions.iconUrl iconUrl}.
+             *
+             * The app icon mask should be in alpha channel, as only the alpha channel of the image will be considered.
+             * @deprecated since Chrome 59. The app icon mask is not visible for Mac OS X users.
+             */
+            appIconMaskUrl?: string;
+            /** Text and icons for up to two notification action buttons. */
+            buttons?: NotificationButton[];
+            /** Alternate notification content with a lower-weight font. */
+            contextMessage?: string;
+            /** A timestamp associated with the notification, in milliseconds past the epoch (e.g. `Date.now() + n`). */
+            eventTime?: number;
+            /**
+             * A URL to the sender's avatar, app icon, or a thumbnail for image notifications.
+             *
+             * URLs can be a data URL, a blob URL, or a URL relative to a resource within this extension's .crx file
+             *
+             * **Note:** This value is required for the {@link notifications.create}() method.
+             */
+            iconUrl?: string;
+            /**
+             * A URL to the image thumbnail for image-type notifications. URLs have the same restrictions as {@link notifications.NotificationOptions.iconUrl iconUrl}.
+             * @deprecated since Chrome 59. The image is not visible for Mac OS X users.
+             */
+            imageUrl?: string;
+            /** @deprecated since Chrome 67. This UI hint is ignored as of Chrome 67 */
+            isClickable?: boolean;
+            /** Items for multi-item notifications. Users on Mac OS X only see the first item. */
+            items?: NotificationItem[];
+            /**
+             * Main notification content.
+             *
+             * **Note:** This value is required for the {@link notifications.create}() method.
+             */
+            message?: string;
+            /** Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero is default. On platforms that don't support a notification center (Windows, Linux & Mac), -2 and -1 result in an error as notifications with those priorities will not be shown at all. */
+            priority?: number;
+            /** Current progress ranges from 0 to 100. */
+            progress?: number;
+            /**
+             * Indicates that the notification should remain visible on screen until the user activates or dismisses the notification. This defaults to false.
+             * @since Chrome 50
+             */
+            requireInteraction?: boolean;
+            /**
+             * Indicates that no sounds or vibrations should be made when the notification is being shown. This defaults to false.
+             * @since Chrome 70
+             */
+            silent?: boolean;
+            /**
+             * Title of the notification (e.g. sender name for email).
+             *
+             * **Note:** This value is required for the {@link notifications.create}() method.
+             */
+            title?: string;
+            /** Which type of notification to display.
+             *
+             * **Note:** This value is required for the {@link notifications.create}() method.
+             */
+            type?: `${TemplateType}`;
+        }
 
-        export interface NotificationClosedEvent
-            extends chrome.events.Event<(notificationId: string, byUser: boolean) => void>
-        {}
+        type NotificationCreateOptions = SetRequired<NotificationOptions, "type" | "title" | "message" | "iconUrl">;
 
-        export interface NotificationClickedEvent extends chrome.events.Event<(notificationId: string) => void> {}
+        export enum PermissionLevel {
+            /** Specifies that the user has elected to show notifications from the app or extension. This is the default at install time. */
+            GRANTED = "granted",
+            /** Specifies that the user has elected not to show notifications from the app or extension. */
+            DENIED = "denied",
+        }
 
-        export interface NotificationButtonClickedEvent
-            extends chrome.events.Event<(notificationId: string, buttonIndex: number) => void>
-        {}
+        export enum TemplateType {
+            /** Contains an icon, title, message, expandedMessage, and up to two buttons. */
+            BASIC = "basic",
+            /** Contains an icon, title, message, expandedMessage, image, and up to two buttons. */
+            IMAGE = "image",
+            /** Contains an icon, title, message, items, and up to two buttons. Users on Mac OS X only see the first item. */
+            LIST = "list",
+            /** Contains an icon, title, message, progress, and up to two buttons. */
+            PROGRESS = "progress",
+        }
 
-        export interface NotificationPermissionLevelChangedEvent extends chrome.events.Event<(level: string) => void> {}
-
-        export interface NotificationShowSettingsEvent extends chrome.events.Event<() => void> {}
-
-        /** The notification closed, either by the system or by user action. */
-        export var onClosed: NotificationClosedEvent;
-        /** The user clicked in a non-button area of the notification. */
-        export var onClicked: NotificationClickedEvent;
-        /** The user pressed a button in the notification. */
-        export var onButtonClicked: NotificationButtonClickedEvent;
         /**
-         * The user changes the permission level.
-         * @since Chrome 32
+         * Clears the specified notification.
+         * @param notificationId The id of the notification to be cleared. This is returned by {@link notifications.create} method.
+         *
+         * Can return its result via Promise since Chrome 116
          */
-        export var onPermissionLevelChanged: NotificationPermissionLevelChangedEvent;
-        /**
-         * The user clicked on a link for the app's notification settings.
-         * @since Chrome 32
-         */
-        export var onShowSettings: NotificationShowSettingsEvent;
+        export function clear(notificationId: string): Promise<boolean>;
+        export function clear(notificationId: string, callback: (wasCleared: boolean) => void): void;
 
         /**
          * Creates and displays a notification.
-         * @param notificationId Identifier of the notification. If not set or empty, an ID will automatically be generated. If it matches an existing notification, this method first clears that notification before proceeding with the create operation.
-         * The notificationId parameter is required before Chrome 42.
+         * @param notificationId Identifier of the notification. If not set or empty, an ID will automatically be generated. If it matches an existing notification, this method first clears that notification before proceeding with the create operation. The identifier may not be longer than 500 characters.
+         *
+         * The `notificationId` parameter is required before Chrome 42.
          * @param options Contents of the notification.
-         * @param callback Returns the notification id (either supplied or generated) that represents the created notification.
-         * The callback is required before Chrome 42.
+         *
+         * Can return its result via Promise since Chrome 116
          */
+        export function create(notificationId: string, options: NotificationCreateOptions): Promise<string>;
+        export function create(options: NotificationCreateOptions): Promise<string>;
         export function create(
             notificationId: string,
-            options: NotificationOptions<true>,
-            callback?: (notificationId: string) => void,
+            options: NotificationCreateOptions,
+            callback: (notificationId: string) => void,
         ): void;
+        export function create(options: NotificationCreateOptions, callback: (notificationId: string) => void): void;
+
         /**
-         * Creates and displays a notification.
-         * @param notificationId Identifier of the notification. If not set or empty, an ID will automatically be generated. If it matches an existing notification, this method first clears that notification before proceeding with the create operation.
-         * The notificationId parameter is required before Chrome 42.
-         * @param options Contents of the notification.
-         * @param callback Returns the notification id (either supplied or generated) that represents the created notification.
-         * The callback is required before Chrome 42.
+         * Retrieves all the notifications of this app or extension.
+         *
+         * Can return its result via Promise since Chrome 116
          */
-        export function create(options: NotificationOptions<true>, callback?: (notificationId: string) => void): void;
+        export function getAll(): Promise<{ [key: string]: true }>;
+        export function getAll(callback: (notifications: { [key: string]: true }) => void): void;
+
+        /**
+         * Retrieves whether the user has enabled notifications from this app or extension.
+         *
+         * Can return its result via Promise since Chrome 116
+         */
+        export function getPermissionLevel(): Promise<`${PermissionLevel}`>;
+        export function getPermissionLevel(callback: (level: `${PermissionLevel}`) => void): void;
+
         /**
          * Updates an existing notification.
-         * @param notificationId The id of the notification to be updated. This is returned by notifications.create method.
+         * @param notificationId The id of the notification to be updated. This is returned by {@link notifications.create} method.
          * @param options Contents of the notification to update to.
-         * @param callback Called to indicate whether a matching notification existed.
-         * The callback is required before Chrome 42.
+         *
+         * Can return its result via Promise since Chrome 116
          */
+        export function update(notificationId: string, options: NotificationOptions): Promise<boolean>;
         export function update(
             notificationId: string,
             options: NotificationOptions,
-            callback?: (wasUpdated: boolean) => void,
+            callback: (wasUpdated: boolean) => void,
         ): void;
+
+        /** The user pressed a button in the notification. */
+        export const onButtonClicked: events.Event<(notificationId: string, buttonIndex: number) => void>;
+
+        /** The user clicked in a non-button area of the notification. */
+        export const onClicked: events.Event<(notificationId: string) => void>;
+
+        /** The notification closed, either by the system or by user action. */
+        export const onClosed: events.Event<(notificationId: string, byUser: boolean) => void>;
+
+        /** The user changes the permission level. As of Chrome 47, only ChromeOS has UI that dispatches this event. */
+        export const onPermissionLevelChanged: events.Event<(level: `${PermissionLevel}`) => void>;
+
         /**
-         * Clears the specified notification.
-         * @param notificationId The id of the notification to be cleared. This is returned by notifications.create method.
-         * @param callback Called to indicate whether a matching notification existed.
-         * The callback is required before Chrome 42.
+         * The user clicked on a link for the app's notification settings. As of Chrome 47, only ChromeOS has UI that dispatches this event. As of Chrome 65, that UI has been removed from ChromeOS, too.
+         * @deprecated since Chrome 65. Custom notification settings button is no longer supported.
          */
-        export function clear(notificationId: string, callback?: (wasCleared: boolean) => void): void;
-        /**
-         * Retrieves all the notifications.
-         * @since Chrome 29
-         * @param callback Returns the set of notification_ids currently in the system.
-         */
-        export function getAll(callback: (notifications: Object) => void): void;
-        /**
-         * Retrieves whether the user has enabled notifications from this app or extension.
-         * @since Chrome 32
-         * @param callback Returns the current permission level.
-         */
-        export function getPermissionLevel(callback: (level: string) => void): void;
+        export const onShowSettings: events.Event<() => void>;
     }
 
     ////////////////////
@@ -7626,7 +7626,7 @@ declare namespace chrome {
          */
         export function getKeyPair(
             certificate: ArrayBuffer,
-            parameters: Object,
+            parameters: { [key: string]: unknown },
             callback: (publicKey: CryptoKey, privateKey: CryptoKey | null) => void,
         ): void;
         /**
@@ -7640,7 +7640,7 @@ declare namespace chrome {
          */
         export function getKeyPairBySpki(
             publicKeySpkiDer: ArrayBuffer,
-            parameters: Object,
+            parameters: { [key: string]: unknown },
             callback: (publicKey: CryptoKey, privateKey: CryptoKey | null) => void,
         ): void;
         /** An implementation of WebCrypto's  SubtleCrypto that allows crypto operations on keys of client certificates that are available to this extension. */
@@ -7716,7 +7716,7 @@ declare namespace chrome {
             /** The print job title. */
             title: string;
             /** Print ticket in  CJT format. */
-            ticket: Object;
+            ticket: { [key: string]: unknown };
             /** The document content type. Supported formats are "application/pdf" and "image/pwg-raster". */
             contentType: string;
             /** Blob containing the document data to print. Format must match |contentType|. */
@@ -7882,6 +7882,13 @@ declare namespace chrome {
         export function cancelJob(jobId: string, callback: () => void): void;
 
         /**
+         * Returns the status of the print job. This call will fail with a runtime error if the print job with the given `jobId` doesn't exist. `jobId`: The id of the print job to return the status of. This should be the same id received in a {@link SubmitJobResponse}.
+         * @since Chrome 135
+         */
+        export function getJobStatus(jobId: string): Promise<`${JobStatus}`>;
+        export function getJobStatus(jobId: string, callback: (status: `${JobStatus}`) => void): void;
+
+        /**
          * Returns the status and capabilities of the printer in CDD format. This call will fail with a runtime error if no printers with given id are installed.
          * Can return its result via Promise in Manifest V3 or later since Chrome 100.
          */
@@ -7905,7 +7912,7 @@ declare namespace chrome {
         /**
          * Event fired when the status of the job is changed. This is only fired for the jobs created by this extension.
          */
-        export const onJobStatusChanged: chrome.events.Event<(jobId: string, status: JobStatus) => void>;
+        export const onJobStatusChanged: chrome.events.Event<(jobId: string, status: `${JobStatus}`) => void>;
     }
 
     ////////////////////
@@ -9501,7 +9508,7 @@ declare namespace chrome {
          */
         export function sendNativeMessage(
             application: string,
-            message: Object,
+            message: object,
             responseCallback: (response: any) => void,
         ): void;
         /**
@@ -9512,7 +9519,7 @@ declare namespace chrome {
          */
         export function sendNativeMessage(
             application: string,
-            message: Object,
+            message: object,
         ): Promise<any>;
         /**
          * Sets the URL to be visited upon uninstallation. This may be used to clean up server-side data, do analytics, and implement surveys. Maximum 255 characters.
@@ -10198,7 +10205,11 @@ declare namespace chrome {
             address: string;
         }
 
-        export function create(type: string, options?: Object, callback?: (createInfo: CreateInfo) => void): void;
+        export function create(
+            type: string,
+            options?: { [key: string]: unknown },
+            callback?: (createInfo: CreateInfo) => void,
+        ): void;
         export function destroy(socketId: number): void;
         export function connect(
             socketId: number,
@@ -11683,7 +11694,7 @@ declare namespace chrome {
          * Closes a tab.
          * @param tabId The tab to close.
          */
-        export function remove(tabId: number, callback: Function): void;
+        export function remove(tabId: number, callback: () => void): void;
         /**
          * Closes several tabs.
          * @param tabIds The list of tabs to close.
@@ -11694,7 +11705,7 @@ declare namespace chrome {
          * Closes several tabs.
          * @param tabIds The list of tabs to close.
          */
-        export function remove(tabIds: number[], callback: Function): void;
+        export function remove(tabIds: number[], callback: () => void): void;
         /**
          * Captures the visible area of the currently active tab in the specified window. You must have <all_urls> permission to use this method.
          * @param callback
@@ -11874,7 +11885,7 @@ declare namespace chrome {
          * @param details Details of the script or CSS to inject. Either the code or the file property must be set, but both may not be set at the same time.
          * @param callback Optional. Called when all the CSS has been inserted.
          */
-        export function insertCSS(details: InjectDetails, callback: Function): void;
+        export function insertCSS(details: InjectDetails, callback: () => void): void;
         /**
          * Injects CSS into a page. For details, see the programmatic injection section of the content scripts doc.
          * @param tabId Optional. The ID of the tab in which to insert the CSS; defaults to the active tab of the current window.
@@ -11888,7 +11899,7 @@ declare namespace chrome {
          * @param details Details of the script or CSS to inject. Either the code or the file property must be set, but both may not be set at the same time.
          * @param callback Optional. Called when all the CSS has been inserted.
          */
-        export function insertCSS(tabId: number, details: InjectDetails, callback: Function): void;
+        export function insertCSS(tabId: number, details: InjectDetails, callback: () => void): void;
         /**
          * Highlights the given tabs.
          * @since Chrome 16
@@ -12226,131 +12237,111 @@ declare namespace chrome {
      */
     export namespace tabGroups {
         /** An ID that represents the absence of a group. */
-        export var TAB_GROUP_ID_NONE: -1;
+        export const TAB_GROUP_ID_NONE: -1;
 
-        export type ColorEnum = "grey" | "blue" | "red" | "yellow" | "green" | "pink" | "purple" | "cyan" | "orange";
+        /** The group's color. */
+        export enum Color {
+            BLUE = "blue",
+            CYAN = "cyan",
+            GREEN = "green",
+            GREY = "grey",
+            ORANGE = "orange",
+            PINK = "pink",
+            PURPLE = "purple",
+            RED = "red",
+            YELLOW = "yellow",
+        }
 
         export interface TabGroup {
             /** Whether the group is collapsed. A collapsed group is one whose tabs are hidden. */
             collapsed: boolean;
             /** The group's color. */
-            color: ColorEnum;
+            color: `${Color}`;
             /** The ID of the group. Group IDs are unique within a browser session. */
             id: number;
-            /** Optional. The title of the group. */
-            title?: string | undefined;
+            /** The title of the group. */
+            title?: string;
             /** The ID of the window that contains the group. */
             windowId: number;
         }
 
         export interface MoveProperties {
-            /** The position to move the group to. Use -1 to place the group at the end of the window. */
+            /** The position to move the group to. Use `-1` to place the group at the end of the window. */
             index: number;
-            /** Optional. The window to move the group to. Defaults to the window the group is currently in. Note that groups can only be moved to and from windows with chrome.windows.WindowType type "normal". */
-            windowId?: number | undefined;
+            /** The window to move the group to. Defaults to the window the group is currently in. Note that groups can only be moved to and from windows with {@link windows.windowTypeEnum windows.windowType} type `"normal"`. */
+            windowId?: number;
         }
 
         export interface QueryInfo {
-            /** Optional. Whether the groups are collapsed. */
-            collapsed?: boolean | undefined;
-            /** Optional. The color of the groups. */
-            color?: ColorEnum | undefined;
-            /** Optional. Match group titles against a pattern. */
-            title?: string | undefined;
-            /** Optional. The ID of the window that contains the group. */
-            windowId?: number | undefined;
+            /** Whether the groups are collapsed. */
+            collapsed?: boolean;
+            /** The color of the groups. */
+            color?: `${Color}`;
+            /** Match group titles against a pattern. */
+            title?: string;
+            /** The ID of the parent window, or {@link windows.WINDOW_ID_CURRENT} for the current window. */
+            windowId?: number;
         }
 
         export interface UpdateProperties {
-            /** Optional. Whether the group should be collapsed. */
-            collapsed?: boolean | undefined;
-            /** Optional. The color of the group. */
-            color?: ColorEnum | undefined;
-            /** Optional. The title of the group. */
-            title?: string | undefined;
+            /** Whether the group should be collapsed. */
+            collapsed?: boolean;
+            /** The color of the group. */
+            color?: `${Color}`;
+            /** The title of the group. */
+            title?: string;
         }
 
         /**
          * Retrieves details about the specified group.
-         * @param groupId The ID of the tab group.
-         * @param callback Called with the retrieved tab group.
+         *
+         * Can return its result via Promise since Chrome 90.
          */
+        export function get(groupId: number): Promise<TabGroup>;
         export function get(groupId: number, callback: (group: TabGroup) => void): void;
 
         /**
-         * Retrieves details about the specified group.
-         * @param groupId The ID of the tab group.
-         * @return The `get` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function get(groupId: number): Promise<TabGroup>;
-
-        /**
          * Moves the group and all its tabs within its window, or to a new window.
          * @param groupId The ID of the group to move.
-         * @param moveProperties Information on how to move the group.
-         * @return The `move` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise since Chrome 90.
          */
-        export function move(groupId: number, moveProperties: MoveProperties): Promise<TabGroup>;
-
-        /**
-         * Moves the group and all its tabs within its window, or to a new window.
-         * @param groupId The ID of the group to move.
-         * @param moveProperties Information on how to move the group.
-         * @param callback Optional.
-         */
+        export function move(groupId: number, moveProperties: MoveProperties): Promise<TabGroup | undefined>;
         export function move(
             groupId: number,
             moveProperties: MoveProperties,
-            callback: (group: TabGroup) => void,
+            callback: (group?: TabGroup) => void,
         ): void;
 
         /**
          * Gets all groups that have the specified properties, or all groups if no properties are specified.
-         * @param queryInfo Object with search parameters.
-         * @param callback Called with retrieved tab groups.
+         *
+         * Can return its result via Promise since Chrome 90.
          */
+        export function query(queryInfo: QueryInfo): Promise<TabGroup[]>;
         export function query(queryInfo: QueryInfo, callback: (result: TabGroup[]) => void): void;
 
         /**
-         * Gets all groups that have the specified properties, or all groups if no properties are specified.
-         * @param queryInfo Object with search parameters.
-         * @return The `query` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function query(queryInfo: QueryInfo): Promise<TabGroup[]>;
-
-        /**
-         * Modifies the properties of a group. Properties that are not specified in updateProperties are not modified.
+         * Modifies the properties of a group. Properties that are not specified in `updateProperties` are not modified.
          * @param groupId The ID of the group to modify.
-         * @param updateProperties Information on how to update the group.
-         * @return The `update` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise since Chrome 90.
          */
-        export function update(groupId: number, updateProperties: UpdateProperties): Promise<TabGroup>;
-
-        /**
-         * Modifies the properties of a group. Properties that are not specified in updateProperties are not modified.
-         * @param groupId The ID of the group to modify.
-         * @param updateProperties Information on how to update the group.
-         * @param callback Optional.
-         */
+        export function update(groupId: number, updateProperties: UpdateProperties): Promise<TabGroup | undefined>;
         export function update(
             groupId: number,
             updateProperties: UpdateProperties,
-            callback: (group: TabGroup) => void,
+            callback: (group?: TabGroup) => void,
         ): void;
 
-        export interface TabGroupCreatedEvent extends chrome.events.Event<(group: TabGroup) => void> {}
-        export interface TabGroupMovedEvent extends chrome.events.Event<(group: TabGroup) => void> {}
-        export interface TabGroupRemovedEvent extends chrome.events.Event<(group: TabGroup) => void> {}
-        export interface TabGroupUpdated extends chrome.events.Event<(group: TabGroup) => void> {}
-
         /** Fired when a group is created. */
-        export var onCreated: TabGroupCreatedEvent;
+        export const onCreated: events.Event<(group: TabGroup) => void>;
         /** Fired when a group is moved within a window. Move events are still fired for the individual tabs within the group, as well as for the group itself. This event is not fired when a group is moved between windows; instead, it will be removed from one window and created in another. */
-        export var onMoved: TabGroupMovedEvent;
-        /** Fired when a group is closed, either directly by the user or automatically because it contained zero. */
-        export var onRemoved: TabGroupRemovedEvent;
+        export const onMoved: events.Event<(group: TabGroup) => void>;
+        /** Fired when a group is closed, either directly by the user or automatically because it contained zero tabs. */
+        export const onRemoved: events.Event<(group: TabGroup) => void>;
         /** Fired when a group is updated. */
-        export var onUpdated: TabGroupUpdated;
+        export const onUpdated: events.Event<(group: TabGroup) => void>;
     }
 
     ////////////////////
@@ -12853,7 +12844,7 @@ declare namespace chrome {
         export interface VpnConfigRemovalEvent extends chrome.events.Event<(id: string) => void> {}
 
         export interface VpnConfigCreationEvent
-            extends chrome.events.Event<(id: string, name: string, data: Object) => void>
+            extends chrome.events.Event<(id: string, name: string, data: { [key: string]: unknown }) => void>
         {}
 
         export interface VpnUiEvent extends chrome.events.Event<(event: string, id?: string) => void> {}
@@ -12870,19 +12861,19 @@ declare namespace chrome {
          * @param id ID of the VPN configuration to destroy.
          * @param callback Optional. Called when the configuration is destroyed or if there is an error.
          */
-        export function destroyConfig(id: string, callback?: Function): void;
+        export function destroyConfig(id: string, callback?: () => void): void;
         /**
          * Sets the parameters for the VPN session. This should be called immediately after "connected" is received from the platform. This will succeed only when the VPN session is owned by the extension.
          * @param parameters The parameters for the VPN session.
          * @param callback Called when the parameters are set or if there is an error.
          */
-        export function setParameters(parameters: VpnSessionParameters, callback: Function): void;
+        export function setParameters(parameters: VpnSessionParameters, callback?: () => void): void;
         /**
          * Sends an IP packet through the tunnel created for the VPN session. This will succeed only when the VPN session is owned by the extension.
          * @param data The IP packet to be sent to the platform.
          * @param callback Optional. Called when the packet is sent or if there is an error.
          */
-        export function sendPacket(data: ArrayBuffer, callback?: Function): void;
+        export function sendPacket(data: ArrayBuffer, callback?: () => void): void;
         /**
          * Notifies the VPN session state to the platform. This will succeed only when the VPN session is owned by the extension.
          * @param state The VPN session state of the VPN client.
@@ -12890,7 +12881,7 @@ declare namespace chrome {
          * failure: VPN connection failed.
          * @param callback Optional. Called when the notification is complete or if there is an error.
          */
-        export function notifyConnectionStateChanged(state: string, callback?: Function): void;
+        export function notifyConnectionStateChanged(state: string, callback?: () => void): void;
 
         /** Triggered when a message is received from the platform for a VPN configuration owned by the extension. */
         export var onPlatformMessage: VpnPlatformMessageEvent;
@@ -13163,7 +13154,7 @@ declare namespace chrome {
      * Manifest: "host_permissions"
      */
     export namespace webRequest {
-        interface WebRequestEvent<T extends Function, U extends string[]>
+        interface WebRequestEvent<T extends (...args: any) => void, U extends string[]>
             extends Omit<chrome.events.Event<T>, "addListener">
         {
             addListener(callback: T, filter: RequestFilter, extraInfoSpec?: U): void;
@@ -13420,7 +13411,7 @@ declare namespace chrome {
          * Can return its result via Promise in Manifest V3 or later since Chrome 116.
          */
         export function handlerBehaviorChanged(): Promise<void>;
-        export function handlerBehaviorChanged(callback: Function): void;
+        export function handlerBehaviorChanged(callback: () => void): void;
 
         /** Fired when a request is about to occur. */
         export const onBeforeRequest: WebRequestBodyEvent;
@@ -13754,7 +13745,7 @@ declare namespace chrome {
          */
         export function remove(windowId: number): Promise<void>;
         /** Removes (closes) a window, and all the tabs inside it. */
-        export function remove(windowId: number, callback: Function): void;
+        export function remove(windowId: number, callback: () => void): void;
         /**
          * Gets the window that was most recently focused — typically the window 'on top'.
          */
@@ -14581,7 +14572,7 @@ declare namespace chrome {
         export function isRegexSupported(regexOptions: RegexOptions): Promise<IsRegexSupportedResult>;
 
         /** Configures if the action count for tabs should be displayed as the extension action's badge text and provides a way for that action count to be incremented. */
-        export function setExtensionActionOptions(options: ExtensionActionOptions, callback: Function): void;
+        export function setExtensionActionOptions(options: ExtensionActionOptions, callback: () => void): void;
 
         /**
          * Configures if the action count for tabs should be displayed as the extension action's badge text and provides a way for that action count to be incremented.
@@ -14613,7 +14604,7 @@ declare namespace chrome {
          * In case of an error, runtime.lastError will be set and no change will be made to the rule set.
          * This can happen for multiple reasons, such as invalid rule format, duplicate rule ID, rule count limit exceeded, internal errors, and others.
          */
-        export function updateDynamicRules(options: UpdateRuleOptions, callback: Function): void;
+        export function updateDynamicRules(options: UpdateRuleOptions, callback: () => void): void;
 
         /** Modifies the current set of dynamic rules for the extension.
          * The rules with IDs listed in options.removeRuleIds are first removed, and then the rules given in options.addRules are added.
@@ -14639,7 +14630,7 @@ declare namespace chrome {
          * In case of an error, runtime.lastError will be set and no change will be made to set of enabled rulesets.
          * This can happen for multiple reasons, such as invalid ruleset IDs, rule count limit exceeded, or internal errors.
          */
-        export function updateEnabledRulesets(options: UpdateRulesetOptions, callback: Function): void;
+        export function updateEnabledRulesets(options: UpdateRulesetOptions, callback: () => void): void;
 
         /** Updates the set of enabled static rulesets for the extension.
          * The rulesets with IDs listed in options.disableRulesetIds are first removed, and then the rulesets listed in options.enableRulesetIds are added.
@@ -14664,7 +14655,7 @@ declare namespace chrome {
          * In case of an error, runtime.lastError will be set and no change will be made to the rule set.
          * This can happen for multiple reasons, such as invalid rule format, duplicate rule ID, rule count limit exceeded, and others.
          */
-        export function updateSessionRules(options: UpdateRuleOptions, callback: Function): void;
+        export function updateSessionRules(options: UpdateRuleOptions, callback: () => void): void;
 
         /** Modifies the current set of session scoped rules for the extension.
          * The rules with IDs listed in options.removeRuleIds are first removed, and then the rules given in options.addRules are added.
