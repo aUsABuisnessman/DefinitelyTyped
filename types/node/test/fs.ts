@@ -130,6 +130,21 @@ import { CopyOptions, CopySyncOptions, cp, cpSync, glob, globSync } from "fs";
     // 2-param version using all-default options:
     fs.read(1, (err: NodeJS.ErrnoException | null, bytesRead: number, buffer: NodeJS.ArrayBufferView) => {});
     fs.read(1, () => {});
+    // 6-param version with bigint valued position:
+    fs.read(
+        1,
+        new DataView(new ArrayBuffer(1)),
+        0,
+        1,
+        0n,
+        (err: NodeJS.ErrnoException | null, bytesRead: number, buffer: DataView) => {},
+    );
+    // 3-param version with bigint valued position:
+    fs.read(
+        1,
+        { buffer: new DataView(new ArrayBuffer(1)), offset: 0, length: 1, position: 0n },
+        (err: NodeJS.ErrnoException | null, bytesRead: number, buffer: DataView) => {},
+    );
 }
 
 {
@@ -496,7 +511,6 @@ async function testPromisify() {
     fs.opendir("test", async (err, dir) => {
         const dirEnt: fs.Dirent | null = await dir.read();
         dirEnt?.parentPath; // $ExpectType string | undefined
-        dirEnt?.path; // $ExpectType string | undefined
     });
 
     fs.opendir(Buffer.from("test"), async (err, dir) => {
@@ -613,7 +627,7 @@ async function testPromisify() {
 
     handle.readableWebStream();
 
-    handle.readLines()[Symbol.asyncIterator](); // $ExpectType AsyncIterator<string, any, any>
+    handle.readLines()[Symbol.asyncIterator](); // $ExpectType AsyncIterator<string, undefined, any>
 });
 
 {
