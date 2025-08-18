@@ -471,23 +471,23 @@ declare namespace chrome {
         /**
          * Retrieves details about the specified alarm.
          */
-        export function get(callback: (alarm: Alarm) => void): void;
+        export function get(callback: (alarm?: Alarm) => void): void;
         /**
          * Retrieves details about the specified alarm.
          * @return The `get` method provides its result via callback or returned as a `Promise` (MV3 only).
          */
-        export function get(): Promise<Alarm>;
+        export function get(): Promise<Alarm | undefined>;
         /**
          * Retrieves details about the specified alarm.
          * @param name The name of the alarm to get. Defaults to the empty string.
          */
-        export function get(name: string, callback: (alarm: Alarm) => void): void;
+        export function get(name: string, callback: (alarm?: Alarm) => void): void;
         /**
          * Retrieves details about the specified alarm.
          * @param name The name of the alarm to get. Defaults to the empty string.
          * @return The `get` method provides its result via callback or returned as a `Promise` (MV3 only).
          */
-        export function get(name: string): Promise<Alarm>;
+        export function get(name: string): Promise<Alarm | undefined>;
 
         /** Fired when an alarm has elapsed. Useful for event pages. */
         export var onAlarm: AlarmEvent;
@@ -643,40 +643,6 @@ declare namespace chrome {
          * Note that mute state is system-wide and the new value applies to every audio device with specified stream type.
          */
         export const onMuteChanged: chrome.events.Event<(event: MuteChangedEvent) => void>;
-    }
-
-    ////////////////////
-    // Browser
-    ////////////////////
-    /**
-     * Use the chrome.browser API to interact with the Chrome browser associated with
-     * the current application and Chrome profile.
-     * @deprecated Part of the deprecated Chrome Apps platform
-     */
-    export namespace browser {
-        export interface Options {
-            /** The URL to navigate to when the new tab is initially opened. */
-            url: string;
-        }
-
-        /**
-         * Opens a new tab in a browser window associated with the current application
-         * and Chrome profile. If no browser window for the Chrome profile is opened,
-         * a new one is opened prior to creating the new tab.
-         * @param options Configures how the tab should be opened.
-         * @param callback Called when the tab was successfully
-         * created, or failed to be created. If failed, runtime.lastError will be set.
-         */
-        export function openTab(options: Options, callback: () => void): void;
-
-        /**
-         * Opens a new tab in a browser window associated with the current application
-         * and Chrome profile. If no browser window for the Chrome profile is opened,
-         * a new one is opened prior to creating the new tab.
-         * @since Chrome 42
-         * @param options Configures how the tab should be opened.
-         */
-        export function openTab(options: Options): void;
     }
 
     ////////////////////
@@ -1120,267 +1086,209 @@ declare namespace chrome {
      */
     export namespace browsingData {
         export interface OriginTypes {
-            /** Optional. Extensions and packaged applications a user has installed (be _really_ careful!).  */
+            /** Extensions and packaged applications a user has installed (be _really_ careful!). */
             extension?: boolean | undefined;
-            /** Optional. Websites that have been installed as hosted applications (be careful!).  */
+            /** Websites that have been installed as hosted applications (be careful!). */
             protectedWeb?: boolean | undefined;
-            /** Optional. Normal websites.  */
+            /** Normal websites. */
             unprotectedWeb?: boolean | undefined;
         }
 
         /** Options that determine exactly what data will be removed. */
         export interface RemovalOptions {
             /**
-             * Optional.
+             * When present, data for origins in this list is excluded from deletion. Can't be used together with `origins`. Only supported for cookies, storage and cache. Cookies are excluded for the whole registrable domain.
              * @since Chrome 74
-             * When present, data for origins in this list is excluded from deletion. Can't be used together with origins. Only supported for cookies, storage and cache. Cookies are excluded for the whole registrable domain.
              */
             excludeOrigins?: string[] | undefined;
-            /**
-             * Optional.
-             * An object whose properties specify which origin types ought to be cleared. If this object isn't specified, it defaults to clearing only "unprotected" origins. Please ensure that you _really_ want to remove application data before adding 'protectedWeb' or 'extensions'.
-             */
+            /** An object whose properties specify which origin types ought to be cleared. If this object isn't specified, it defaults to clearing only "unprotected" origins. Please ensure that you _really_ want to remove application data before adding 'protectedWeb' or 'extensions'. */
             originTypes?: OriginTypes | undefined;
             /**
-             * Optional.
-             * @since Chrome 74
              * When present, only data for origins in this list is deleted. Only supported for cookies, storage and cache. Cookies are cleared for the whole registrable domain.
+             * @since Chrome 74
              */
-            origins?: string[] | undefined;
-            /**
-             * Optional.
-             * Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the {@link Date.getTime} method). If absent, defaults to 0 (which would remove all browsing data).
-             */
+            origins?: [string, ...string[]] | undefined;
+            /** Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the {@link Date.getTime getTime} method of the JavaScript `Date` object). If absent, defaults to 0 (which would remove all browsing data). */
             since?: number | undefined;
         }
 
-        /**
-         * @since Chrome 27
-         * A set of data types. Missing data types are interpreted as false.
-         */
+        /** A set of data types. Missing data types are interpreted as `false`. */
         export interface DataTypeSet {
-            /** Optional. Websites' WebSQL data.  */
+            /** Websites' WebSQL data. */
             webSQL?: boolean | undefined;
-            /** Optional. Websites' IndexedDB data.  */
+            /** Websites' IndexedDB data. */
             indexedDB?: boolean | undefined;
-            /** Optional. The browser's cookies.  */
+            /** The browser's cookies. */
             cookies?: boolean | undefined;
-            /** Optional. Stored passwords.  */
+            /** Stored passwords. */
             passwords?: boolean | undefined;
             /**
-             * @deprecated Deprecated since Chrome 76.
-             * Support for server-bound certificates has been removed. This data type will be ignored.
-             *
-             * Optional. Server-bound certificates.
+             * Server-bound certificates.
+             * @deprecated since Chrome 76. Support for server-bound certificates has been removed. This data type will be ignored.
              */
             serverBoundCertificates?: boolean | undefined;
-            /** Optional. The browser's download list.  */
+            /** The browser's download list. */
             downloads?: boolean | undefined;
-            /** Optional. The browser's cache. Note: when removing data, this clears the entire cache: it is not limited to the range you specify.  */
+            /** The browser's cache. */
             cache?: boolean | undefined;
-            /** Optional. The browser's cacheStorage.  */
+            /** Cache storage. */
             cacheStorage?: boolean | undefined;
-            /** Optional. Websites' appcaches.  */
+            /** Websites' appcaches. */
             appcache?: boolean | undefined;
-            /** Optional. Websites' file systems.  */
+            /** Websites' file systems. */
             fileSystems?: boolean | undefined;
             /**
-             * @deprecated Deprecated since Chrome 88.
-             * Support for Flash has been removed. This data type will be ignored.
-             *
-             * Optional. Plugins' data.
+             * Plugins' data.
+             * @deprecated since Chrome 88. Support for Flash has been removed. This data type will be ignored.
              */
             pluginData?: boolean | undefined;
-            /** Optional. Websites' local storage data.  */
+            /** Websites' local storage data. */
             localStorage?: boolean | undefined;
-            /** Optional. The browser's stored form data.  */
+            /** The browser's stored form data. */
             formData?: boolean | undefined;
-            /** Optional. The browser's history.  */
+            /** The browser's history. */
             history?: boolean | undefined;
-            /**
-             * Optional.
-             * @since Chrome 39
-             * Service Workers.
-             */
+            /** Service Workers. */
             serviceWorkers?: boolean | undefined;
         }
 
         export interface SettingsResult {
             options: RemovalOptions;
-            /** All of the types will be present in the result, with values of true if they are both selected to be removed and permitted to be removed, otherwise false. */
+            /** All of the types will be present in the result, with values of `true` if they are both selected to be removed and permitted to be removed, otherwise `false`. */
             dataToRemove: DataTypeSet;
-            /** All of the types will be present in the result, with values of true if they are permitted to be removed (e.g., by enterprise policy) and false if not. */
+            /** All of the types will be present in the result, with values of `true` if they are permitted to be removed (e.g., by enterprise policy) and `false` if not. */
             dataRemovalPermitted: DataTypeSet;
         }
 
         /**
-         * @since Chrome 26
          * Reports which types of data are currently selected in the 'Clear browsing data' settings UI. Note: some of the data types included in this API are not available in the settings UI, and some UI settings control more than one data type listed here.
-         * @return The `settings` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function settings(): Promise<SettingsResult>;
-        /**
-         * @since Chrome 26
-         * Reports which types of data are currently selected in the 'Clear browsing data' settings UI. Note: some of the data types included in this API are not available in the settings UI, and some UI settings control more than one data type listed here.
-         */
         export function settings(callback: (result: SettingsResult) => void): void;
+
         /**
-         * @deprecated Deprecated since Chrome 88.
-         * Support for Flash has been removed. This function has no effect.
-         *
          * Clears plugins' data.
-         * @return The `removePluginData` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
+         * @deprecated since Chrome 88. Support for Flash has been removed. This function has no effect
          */
         export function removePluginData(options: RemovalOptions): Promise<void>;
-        /**
-         * @deprecated Deprecated since Chrome 88.
-         * Support for Flash has been removed. This function has no effect.
-         *
-         * Clears plugins' data.
-         * @param callback Called when plugins' data has been cleared.
-         */
         export function removePluginData(options: RemovalOptions, callback: () => void): void;
+
         /**
-         * @since Chrome 72
          * Clears websites' service workers.
-         * @return The `removeServiceWorkers` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
+         * @since Chrome 72
          */
         export function removeServiceWorkers(options: RemovalOptions): Promise<void>;
-        /**
-         * @since Chrome 72
-         * Clears websites' service workers.
-         * @param callback Called when the browser's service workers have been cleared.
-         */
         export function removeServiceWorkers(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears the browser's stored form data (autofill).
-         * @return The `removeFormData` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeFormData(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's stored form data (autofill).
-         * @param callback Called when the browser's form data has been cleared.
-         */
         export function removeFormData(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears websites' file system data.
-         * @return The `removeFileSystems` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeFileSystems(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears websites' file system data.
-         * @param callback Called when websites' file systems have been cleared.
-         */
         export function removeFileSystems(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears various types of browsing data stored in a user's profile.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param dataToRemove The set of data types to remove.
-         * @return The `remove` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
          */
         export function remove(options: RemovalOptions, dataToRemove: DataTypeSet): Promise<void>;
-        /**
-         * Clears various types of browsing data stored in a user's profile.
-         * @param dataToRemove The set of data types to remove.
-         * @param callback Called when deletion has completed.
-         */
         export function remove(options: RemovalOptions, dataToRemove: DataTypeSet, callback: () => void): void;
+
         /**
          * Clears the browser's stored passwords.
-         * @return The `removePasswords` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removePasswords(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's stored passwords.
-         * @param callback Called when the browser's passwords have been cleared.
-         */
         export function removePasswords(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears the browser's cookies and server-bound certificates modified within a particular timeframe.
-         * @return The `removeCookies` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeCookies(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's cookies and server-bound certificates modified within a particular timeframe.
-         * @param callback Called when the browser's cookies and server-bound certificates have been cleared.
-         */
         export function removeCookies(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears websites' WebSQL data.
-         * @return The `removeWebSQL` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeWebSQL(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears websites' WebSQL data.
-         * @param callback Called when websites' WebSQL databases have been cleared.
-         */
         export function removeWebSQL(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears websites' appcache data.
-         * @return The `removeAppcache` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeAppcache(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears websites' appcache data.
-         * @param callback Called when websites' appcache data has been cleared.
-         */
         export function removeAppcache(options: RemovalOptions, callback: () => void): void;
-        /** Clears websites' cache storage data.
-         * @return The `removeCacheStorage` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+
+        /**
+         * Clears websites' cache storage data.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeCacheStorage(options: RemovalOptions): Promise<void>;
-        /** Clears websites' cache storage data.
-         * @param callback Called when websites' appcache data has been cleared.
-         */
         export function removeCacheStorage(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears the browser's list of downloaded files (not the downloaded files themselves).
-         * @return The `removeDownloads` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeDownloads(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's list of downloaded files (not the downloaded files themselves).
-         * @param callback Called when the browser's list of downloaded files has been cleared.
-         */
         export function removeDownloads(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears websites' local storage data.
-         * @return The `removeLocalStorage` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeLocalStorage(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears websites' local storage data.
-         * @param callback Called when websites' local storage has been cleared.
-         */
         export function removeLocalStorage(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears the browser's cache.
-         * @return The `removeCache` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeCache(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's cache.
-         * @param callback Called when the browser's cache has been cleared.
-         */
         export function removeCache(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears the browser's history.
-         * @return The `removeHistory` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeHistory(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears the browser's history.
-         * @param callback Called when the browser's history has cleared.
-         */
         export function removeHistory(options: RemovalOptions, callback: () => void): void;
+
         /**
          * Clears websites' IndexedDB data.
-         * @return The `removeIndexedDB` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function removeIndexedDB(options: RemovalOptions): Promise<void>;
-        /**
-         * Clears websites' IndexedDB data.
-         * @param callback Called when websites' IndexedDB data has been cleared.
-         */
         export function removeIndexedDB(options: RemovalOptions, callback: () => void): void;
     }
 
@@ -1634,29 +1542,24 @@ declare namespace chrome {
      */
     export namespace commands {
         export interface Command {
-            /** Optional. The name of the Extension Command  */
-            name?: string | undefined;
-            /** Optional. The Extension Command description  */
-            description?: string | undefined;
-            /** Optional. The shortcut active for this command, or blank if not active.  */
-            shortcut?: string | undefined;
+            /** The name of the Extension Command */
+            name?: string;
+            /** The Extension Command description */
+            description?: string;
+            /** The shortcut active for this command, or blank if not active. */
+            shortcut?: string;
         }
 
-        export interface CommandEvent extends chrome.events.Event<(command: string, tab: chrome.tabs.Tab) => void> {}
-
         /**
-         * Returns all the registered extension commands for this extension and their shortcut (if active).
-         * @return The `getAll` method provides its result via callback or returned as a `Promise` (MV3 only).
+         * Returns all the registered extension commands for this extension and their shortcut (if active). Before Chrome 110, this command did not return `_execute_action`.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function getAll(): Promise<Command[]>;
-        /**
-         * Returns all the registered extension commands for this extension and their shortcut (if active).
-         * @param callback Called to return the registered commands.
-         */
         export function getAll(callback: (commands: Command[]) => void): void;
 
         /** Fired when a registered command is activated using a keyboard shortcut. */
-        export var onCommand: CommandEvent;
+        export const onCommand: events.Event<(command: string, tab?: tabs.Tab) => void>;
     }
 
     ////////////////////
@@ -2183,7 +2086,12 @@ declare namespace chrome {
      */
     export namespace cookies {
         /** A cookie's 'SameSite' state (https://tools.ietf.org/html/draft-west-first-party-cookies). 'no_restriction' corresponds to a cookie set with 'SameSite=None', 'lax' to 'SameSite=Lax', and 'strict' to 'SameSite=Strict'. 'unspecified' corresponds to a cookie set without the SameSite attribute. **/
-        export type SameSiteStatus = "unspecified" | "no_restriction" | "lax" | "strict";
+        export enum SameSiteStatus {
+            NO_RESTRICTION = "no_restriction",
+            LAX = "lax",
+            STRICT = "strict",
+            UNSPECIFIED = "unspecified",
+        }
 
         /** Represents information about an HTTP cookie. */
         export interface Cookie {
@@ -2204,8 +2112,8 @@ declare namespace chrome {
             session: boolean;
             /** True if the cookie is a host-only cookie (i.e. a request's host must exactly match the domain of the cookie). */
             hostOnly: boolean;
-            /** Optional. The expiration date of the cookie as the number of seconds since the UNIX epoch. Not provided for session cookies.  */
-            expirationDate?: number | undefined;
+            /** The expiration date of the cookie as the number of seconds since the UNIX epoch. Not provided for session cookies. */
+            expirationDate?: number;
             /** The path of the cookie. */
             path: string;
             /** True if the cookie is marked as HttpOnly (i.e. the cookie is inaccessible to client-side scripts). */
@@ -2216,10 +2124,13 @@ declare namespace chrome {
              * The cookie's same-site status (i.e. whether the cookie is sent with cross-site requests).
              * @since Chrome 51
              */
-            sameSite: SameSiteStatus;
+            sameSite: `${SameSiteStatus}`;
         }
 
-        /** Represents a partitioned cookie's partition key. */
+        /**
+         * Represents a partitioned cookie's partition key.
+         * @since Chrome 119
+         */
         export interface CookiePartitionKey {
             /**
              * Indicates if the cookie was set in a cross-cross site context. This prevents a top-level site embedded in a cross-site context from accessing cookies set by the top-level site in a same-site context.
@@ -2239,31 +2150,31 @@ declare namespace chrome {
         }
 
         export interface GetAllDetails {
-            /** Optional. Restricts the retrieved cookies to those whose domains match or are subdomains of this one.  */
+            /** Restricts the retrieved cookies to those whose domains match or are subdomains of this one. */
             domain?: string | undefined;
-            /** Optional. Filters the cookies by name.  */
+            /** Filters the cookies by name. */
             name?: string | undefined;
             /**
              * The partition key for reading or modifying cookies with the Partitioned attribute.
              * @since Chrome 119
              */
             partitionKey?: CookiePartitionKey | undefined;
-            /** Optional. Restricts the retrieved cookies to those that would match the given URL.  */
+            /** Restricts the retrieved cookies to those that would match the given URL. */
             url?: string | undefined;
-            /** Optional. The cookie store to retrieve cookies from. If omitted, the current execution context's cookie store will be used.  */
+            /** The cookie store to retrieve cookies from. If omitted, the current execution context's cookie store will be used. */
             storeId?: string | undefined;
-            /** Optional. Filters out session vs. persistent cookies.  */
+            /** Filters out session vs. persistent cookies. */
             session?: boolean | undefined;
-            /** Optional. Restricts the retrieved cookies to those whose path exactly matches this string.  */
+            /** Restricts the retrieved cookies to those whose path exactly matches this string. */
             path?: string | undefined;
-            /** Optional. Filters the cookies by their Secure property.  */
+            /** Filters the cookies by their Secure property. */
             secure?: boolean | undefined;
         }
 
         export interface SetDetails {
-            /** Optional. The domain of the cookie. If omitted, the cookie becomes a host-only cookie.  */
+            /** The domain of the cookie. If omitted, the cookie becomes a host-only cookie. */
             domain?: string | undefined;
-            /** Optional. The name of the cookie. Empty by default if omitted.  */
+            /** The name of the cookie. Empty by default if omitted. */
             name?: string | undefined;
             /**
              * The partition key for reading or modifying cookies with the Partitioned attribute.
@@ -2272,26 +2183,29 @@ declare namespace chrome {
             partitionKey?: CookiePartitionKey | undefined;
             /** The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie. If host permissions for this URL are not specified in the manifest file, the API call will fail. */
             url: string;
-            /** Optional. The ID of the cookie store in which to set the cookie. By default, the cookie is set in the current execution context's cookie store.  */
+            /** The ID of the cookie store in which to set the cookie. By default, the cookie is set in the current execution context's cookie store. */
             storeId?: string | undefined;
-            /** Optional. The value of the cookie. Empty by default if omitted.  */
+            /** The value of the cookie. Empty by default if omitted. */
             value?: string | undefined;
-            /** Optional. The expiration date of the cookie as the number of seconds since the UNIX epoch. If omitted, the cookie becomes a session cookie.  */
+            /** The expiration date of the cookie as the number of seconds since the UNIX epoch. If omitted, the cookie becomes a session cookie. */
             expirationDate?: number | undefined;
-            /** Optional. The path of the cookie. Defaults to the path portion of the url parameter.  */
+            /** The path of the cookie. Defaults to the path portion of the url parameter. */
             path?: string | undefined;
-            /** Optional. Whether the cookie should be marked as HttpOnly. Defaults to false.  */
+            /** Whether the cookie should be marked as HttpOnly. Defaults to false. */
             httpOnly?: boolean | undefined;
-            /** Optional. Whether the cookie should be marked as Secure. Defaults to false.  */
+            /** Whether the cookie should be marked as Secure. Defaults to false. */
             secure?: boolean | undefined;
             /**
-             * Optional. The cookie's same-site status. Defaults to "unspecified", i.e., if omitted, the cookie is set without specifying a SameSite attribute.
+             * The cookie's same-site status. Defaults to "unspecified", i.e., if omitted, the cookie is set without specifying a SameSite attribute.
              * @since Chrome 51
              */
-            sameSite?: SameSiteStatus | undefined;
+            sameSite?: `${SameSiteStatus}` | undefined;
         }
 
-        /** Details to identify the cookie. */
+        /**
+         * Details to identify the cookie.
+         * @since Chrome 88
+         */
         export interface CookieDetails {
             /** The name of the cookie to access. */
             name: string;
@@ -2311,11 +2225,8 @@ declare namespace chrome {
             cookie: Cookie;
             /** True if a cookie was removed. */
             removed: boolean;
-            /**
-             * @since Chrome 12
-             * The underlying reason behind the cookie's change.
-             */
-            cause: string;
+            /** The underlying reason behind the cookie's change. */
+            cause: `${OnChangedCause}`;
         }
 
         /**
@@ -2324,30 +2235,37 @@ declare namespace chrome {
          */
         export interface FrameDetails {
             /** The unique identifier for the document. If the frameId and/or tabId are provided they will be validated to match the document found by provided document ID. */
-            documentId?: string;
+            documentId?: string | undefined;
             /** The unique identifier for the frame within the tab. */
-            frameId?: number;
+            frameId?: number | undefined;
             /* The unique identifier for the tab containing the frame. */
-            tabId?: number;
+            tabId?: number | undefined;
         }
 
-        export interface CookieChangedEvent extends chrome.events.Event<(changeInfo: CookieChangeInfo) => void> {}
+        /**
+         * The underlying reason behind the cookie's change. If a cookie was inserted, or removed via an explicit call to "chrome.cookies.remove", "cause" will be "explicit". If a cookie was automatically removed due to expiry, "cause" will be "expired". If a cookie was removed due to being overwritten with an already-expired expiration date, "cause" will be set to "expired_overwrite". If a cookie was automatically removed due to garbage collection, "cause" will be "evicted". If a cookie was automatically removed due to a "set" call that overwrote it, "cause" will be "overwrite". Plan your response accordingly.
+         * @since Chrome 44
+         */
+        export enum OnChangedCause {
+            EVICTED = "evicted",
+            EXPIRED = "expired",
+            EXPLICIT = "explicit",
+            EXPIRED_OVERWRITE = "expired_overwrite",
+            OVERWRITE = "overwrite",
+        }
 
         /**
          * Lists all existing cookie stores.
-         * Parameter cookieStores: All the existing cookie stores.
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          */
+        export function getAllCookieStores(): Promise<CookieStore[]>;
         export function getAllCookieStores(callback: (cookieStores: CookieStore[]) => void): void;
 
         /**
-         * Lists all existing cookie stores.
-         * @return The `getAllCookieStores` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getAllCookieStores(): Promise<CookieStore[]>;
-
-        /**
          * The partition key for the frame indicated.
-         * Can return its result via Promise in Manifest V3
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          * @since Chrome 132
          */
         export function getPartitionKey(details: FrameDetails): Promise<{ partitionKey: CookiePartitionKey }>;
@@ -2357,62 +2275,41 @@ declare namespace chrome {
         ): void;
 
         /**
-         * Retrieves all cookies from a single cookie store that match the given information. The cookies returned will be sorted, with those with the longest path first. If multiple cookies have the same path length, those with the earliest creation time will be first.
-         * @param details Information to filter the cookies being retrieved.
-         * Parameter cookies: All the existing, unexpired cookies that match the given cookie info.
+         * Retrieves all cookies from a single cookie store that match the given information. The cookies returned will be sorted, with those with the longest path first. If multiple cookies have the same path length, those with the earliest creation time will be first. This method only retrieves cookies for domains that the extension has host permissions to
+         * @param details Information to identify the cookie to remove.
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          */
+        export function getAll(details: GetAllDetails): Promise<Cookie[]>;
         export function getAll(details: GetAllDetails, callback: (cookies: Cookie[]) => void): void;
 
         /**
-         * Retrieves all cookies from a single cookie store that match the given information. The cookies returned will be sorted, with those with the longest path first. If multiple cookies have the same path length, those with the earliest creation time will be first.
-         * @param details Information to filter the cookies being retrieved.
-         * @return The `getAll` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getAll(details: GetAllDetails): Promise<Cookie[]>;
-
-        /**
          * Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
          * @param details Details about the cookie being set.
-         * @return The `set` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          */
         export function set(details: SetDetails): Promise<Cookie | null>;
-
-        /**
-         * Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
-         * @param details Details about the cookie being set.
-         * Optional parameter cookie: Contains details about the cookie that's been set. If setting failed for any reason, this will be "null", and "chrome.runtime.lastError" will be set.
-         */
         export function set(details: SetDetails, callback: (cookie: Cookie | null) => void): void;
 
         /**
          * Deletes a cookie by name.
-         * @param details Information to identify the cookie to remove.
-         * @return The `remove` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          */
         export function remove(details: CookieDetails): Promise<CookieDetails>;
-
-        /**
-         * Deletes a cookie by name.
-         * @param details Information to identify the cookie to remove.
-         */
         export function remove(details: CookieDetails, callback?: (details: CookieDetails) => void): void;
 
         /**
          * Retrieves information about a single cookie. If more than one cookie of the same name exists for the given URL, the one with the longest path will be returned. For cookies with the same path length, the cookie with the earliest creation time will be returned.
-         * @param details Details to identify the cookie being retrieved.
-         * Parameter cookie: Contains details about the cookie. This parameter is null if no such cookie was found.
-         */
-        export function get(details: CookieDetails, callback: (cookie: Cookie | null) => void): void;
-
-        /**
-         * Retrieves information about a single cookie. If more than one cookie of the same name exists for the given URL, the one with the longest path will be returned. For cookies with the same path length, the cookie with the earliest creation time will be returned.
-         * @param details Details to identify the cookie being retrieved.
-         * @return The `get` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise in Manifest V3 or later.
          */
         export function get(details: CookieDetails): Promise<Cookie | null>;
+        export function get(details: CookieDetails, callback: (cookie: Cookie | null) => void): void;
 
         /** Fired when a cookie is set or removed. As a special case, note that updating a cookie's properties is implemented as a two step process: the cookie to be updated is first removed entirely, generating a notification with "cause" of "overwrite" . Afterwards, a new cookie is written with the updated values, generating a second notification with "cause" "explicit". */
-        export var onChanged: CookieChangedEvent;
+        export const onChanged: events.Event<(changeInfo: CookieChangeInfo) => void>;
     }
 
     ////////////////////
@@ -2720,31 +2617,39 @@ declare namespace chrome {
      * Permissions: "desktopCapture"
      */
     export namespace desktopCapture {
-        /** Contains properties that describe the stream. */
+        /** Enum used to define set of desktop media sources used in {@link chooseDesktopMedia}. */
+        export enum DesktopCaptureSourceType {
+            SCREEN = "screen",
+            WINDOW = "window",
+            TAB = "tab",
+            AUDIO = "audio",
+        }
+
+        /**
+         * Contains properties that describe the stream.
+         * @since Chrome 57
+         */
         export interface StreamOptions {
             /** True if "audio" is included in parameter sources, and the end user does not uncheck the "Share audio" checkbox. Otherwise false, and in this case, one should not ask for audio stream through getUserMedia call. */
             canRequestAudioTrack: boolean;
         }
         /**
          * Shows desktop media picker UI with the specified set of sources.
-         * @param sources Set of sources that should be shown to the user.
-         * Parameter streamId: An opaque string that can be passed to getUserMedia() API to generate media stream that corresponds to the source selected by the user. If user didn't select any source (i.e. canceled the prompt) then the callback is called with an empty streamId. The created streamId can be used only once and expires after a few seconds when it is not used.
+         * @param sources Set of sources that should be shown to the user. The sources order in the set decides the tab order in the picker.
+         * @param targetTab Optional tab for which the stream is created. If not specified then the resulting stream can be used only by the calling extension. The stream can only be used by frames in the given tab whose security origin matches `tab.url`. The tab's origin must be a secure origin, e.g. HTTPS.
+         * @param callback streamId: An opaque string that can be passed to `getUserMedia()` API to generate media stream that corresponds to the source selected by the user. If user didn't select any source (i.e. canceled the prompt) then the callback is called with an empty `streamId`. The created `streamId` can be used only once and expires after a few seconds when it is not used.
+         * @return An id that can be passed to cancelChooseDesktopMedia() in case the prompt need to be canceled.
          */
         export function chooseDesktopMedia(
-            sources: string[],
+            sources: `${DesktopCaptureSourceType}`[],
             callback: (streamId: string, options: StreamOptions) => void,
         ): number;
-        /**
-         * Shows desktop media picker UI with the specified set of sources.
-         * @param sources Set of sources that should be shown to the user.
-         * @param targetTab Optional tab for which the stream is created. If not specified then the resulting stream can be used only by the calling extension. The stream can only be used by frames in the given tab whose security origin matches tab.url.
-         * Parameter streamId: An opaque string that can be passed to getUserMedia() API to generate media stream that corresponds to the source selected by the user. If user didn't select any source (i.e. canceled the prompt) then the callback is called with an empty streamId. The created streamId can be used only once and expires after a few seconds when it is not used.
-         */
         export function chooseDesktopMedia(
-            sources: string[],
-            targetTab: chrome.tabs.Tab,
+            sources: `${DesktopCaptureSourceType}`[],
+            targetTab: tabs.Tab | undefined,
             callback: (streamId: string, options: StreamOptions) => void,
         ): number;
+
         /**
          * Hides desktop media picker dialog shown by chooseDesktopMedia().
          * @param desktopMediaRequestId Id returned by chooseDesktopMedia()
@@ -2960,7 +2865,7 @@ declare namespace chrome {
 
         export interface PanelSearchEvent extends chrome.events.Event<(action: string, queryString?: string) => void> {}
 
-        /** Represents a panel created by extension. */
+        /** Represents a panel created by an extension. */
         export interface ExtensionPanel {
             /**
              * Appends a button to the status bar of the panel.
@@ -4357,6 +4262,24 @@ declare namespace chrome {
          */
         export function getHardwarePlatformInfo(): Promise<HardwarePlatformInfo>;
         export function getHardwarePlatformInfo(callback: (info: HardwarePlatformInfo) => void): void;
+    }
+
+    ////////////////////
+    // Enterprise Login
+    ////////////////////
+    /**
+     * Use the `chrome.enterprise.login` API to exit Managed Guest sessions. Note: This API is only available to extensions installed by enterprise policy in ChromeOS Managed Guest sessions.
+     *
+     * Permissions: "enterprise.login"
+     *
+     * Note: Only available to policy installed extensions.
+     * @platform ChromeOS only
+     * @since Chrome 139
+     */
+    export namespace enterprise.login {
+        /** Exits the current managed guest session. */
+        export function exitCurrentManagedGuestSession(): Promise<void>;
+        export function exitCurrentManagedGuestSession(callback: () => void): void;
     }
 
     ////////////////////
@@ -7179,55 +7102,6 @@ declare namespace chrome {
     }
 
     ////////////////////
-    // Networking
-    ////////////////////
-    /**
-     * Use the networking.config API to authenticate to captive portals.
-     * Permissions:  "networking.config"
-     * Important: This API works only on Chrome OS.
-     * @since Chrome 43
-     */
-    export namespace networking.config {
-        export interface NetworkInfo {
-            /** Currently only WiFi supported. */
-            Type: string;
-            /** Optional. A unique identifier of the network. */
-            GUID?: string | undefined;
-            /** Optional. A hex-encoded byte sequence. */
-            HexSSID?: string | undefined;
-            /** Optional. The decoded SSID of the network (default encoding is UTF-8). To filter for non-UTF-8 SSIDs, use HexSSID instead. */
-            SSID?: string | undefined;
-            /** Optional. The basic service set identification (BSSID) uniquely identifying the basic service set. BSSID is represented as a human readable, hex-encoded string with bytes separated by colons, e.g. 45:67:89:ab:cd:ef. */
-            BSSID?: string | undefined;
-            /** Optional. Identifier indicating the security type of the network. Valid values are None, WEP-PSK, WPA-PSK and WPA-EAP. */
-            Security?: string | undefined;
-        }
-
-        export interface CaptivePorttalDetectedEvent extends chrome.events.Event<(networkInfo: NetworkInfo) => void> {}
-
-        /**
-         * Allows an extension to define network filters for the networks it can handle. A call to this function will remove all filters previously installed by the extension before setting the new list.
-         * @param networks Network filters to set. Every NetworkInfo must either have the SSID or HexSSID set. Other fields will be ignored.
-         * @param callback Called back when this operation is finished.
-         */
-        export function setNetworkFilter(networks: NetworkInfo[], callback: () => void): void;
-        /**
-         * Called by the extension to notify the network config API that it finished a captive portal authentication attempt and hand over the result of the attempt. This function must only be called with the GUID of the latest onCaptivePortalDetected event.
-         * @param GUID Unique network identifier obtained from onCaptivePortalDetected.
-         * @param result The result of the authentication attempt.
-         * unhandled: The extension does not handle this network or captive portal (e.g. server end-point not found or not compatible).
-         * succeeded: The extension handled this network and authenticated successfully.
-         * rejected: The extension handled this network, tried to authenticate, however was rejected by the server.
-         * failed: The extension handled this network, tried to authenticate, however failed due to an unspecified error.
-         * @param callback Called back when this operation is finished.
-         */
-        export function finishAuthentication(GUID: string, result: string, callback?: () => void): void;
-
-        /** This event fires everytime a captive portal is detected on a network matching any of the currently registered network filters and the user consents to use the extension for authentication. Network filters may be set using the setNetworkFilter. Upon receiving this event the extension should start its authentication attempt with the captive portal. When the extension finishes its attempt, it must call finishAuthentication with the GUID received with this event and the appropriate authentication result. */
-        export var onCaptivePortalDetected: CaptivePorttalDetectedEvent;
-    }
-
-    ////////////////////
     // Notifications
     ////////////////////
     /**
@@ -8426,10 +8300,7 @@ declare namespace chrome {
              */
             relatedWebsiteSetsEnabled: chrome.types.ChromeSetting<boolean>;
 
-            /**
-             * If disabled, Chrome blocks third-party sites from setting cookies.
-             * The value of this preference is of type boolean, and the default value is `true`.
-             */
+            /** If disabled, Chrome blocks third-party sites from setting cookies. The value of this preference is of type boolean, and the default value is `true`. Extensions may not enable this API in Incognito mode, where third-party cookies are blocked and can only be allowed at the site level. If you try setting this API to true in Incognito, it will throw an error. */
             thirdPartyCookiesAllowed: chrome.types.ChromeSetting<boolean>;
 
             /**
@@ -8665,274 +8536,6 @@ declare namespace chrome {
     }
 
     ////////////////////
-    // Serial
-    ////////////////////
-    /**
-     * Use the <code>chrome.serial</code> API to read from and write to a device connected to a serial port.
-     * Permissions:  "enterprise.serial"
-     * @since Chrome 29
-     * Important: This API works only on Chrome OS.
-     * @deprecated Part of the deprecated Chrome Apps platform
-     */
-    export namespace serial {
-        export const DataBits: {
-            SEVEN: "seven";
-            EIGHT: "eight";
-        };
-        export const ParityBit: {
-            NO: "no";
-            ODD: "odd";
-            EVEN: "even";
-        };
-        export const StopBits: {
-            ONE: "one";
-            TWO: "two";
-        };
-
-        export interface DeviceInfo {
-            /** The device's system path. This should be passed as the path argument to chrome.serial.connect in order to connect to this device. */
-            path: string;
-            /** Optional. A PCI or USB vendor ID if one can be determined for the underlying device. */
-            vendorId?: number | undefined;
-            /** Optional. A USB product ID if one can be determined for the underlying device. */
-            productId?: number | undefined;
-            /** Optional. A human-readable display name for the underlying device if one can be queried from the host driver. */
-            displayName?: number | undefined;
-        }
-
-        export interface ConnectionInfo {
-            /** The id of the serial port connection. */
-            connectionId?: number | undefined;
-            /** Flag indicating whether the connection is blocked from firing onReceive events. */
-            paused: boolean;
-            /** See ConnectionOptions.persistent */
-            persistent: boolean;
-            /** See ConnectionOptions.name */
-            name: string;
-            /** See ConnectionOptions.bufferSize */
-            bufferSize: number;
-            /** See ConnectionOptions.receiveTimeout */
-            receiveTimeout?: number | undefined;
-            /** See ConnectionOptions.sendTimeout */
-            sendTimeout?: number | undefined;
-            /** Optional. See ConnectionOptions.bitrate.
-             * This field may be omitted or inaccurate if a non-standard bitrate is in use, or if an error occurred while querying the underlying device. */
-            bitrate?: number | undefined;
-            /** Optional. See ConnectionOptions.dataBits. This field may be omitted if an error occurred while querying the underlying device. */
-            dataBits?: typeof DataBits[keyof typeof DataBits] | undefined;
-            /** Optional. See ConnectionOptions.parityBit. This field may be omitted if an error occurred while querying the underlying device. */
-            parityBit?: typeof ParityBit[keyof typeof ParityBit] | undefined;
-            /** Optional. See ConnectionOptions.stopBits. This field may be omitted if an error occurred while querying the underlying device. */
-            stopBits?: typeof StopBits[keyof typeof StopBits] | undefined;
-            /** Optional. Flag indicating whether or not to enable RTS/CTS hardware flow control. Defaults to false. */
-            ctsFlowControl?: boolean | undefined;
-        }
-
-        export interface ConnectionOptions {
-            /** Optional. Flag indicating whether or not the connection should be left open when the application is suspended (see Manage App Lifecycle: https://developer.chrome.com/apps/app_lifecycle).
-             *  The default value is "false." When the application is loaded, any serial connections previously opened with persistent=true can be fetched with getConnections. */
-            persistent?: boolean | undefined;
-            /** Optional. An application-defined string to associate with the connection. */
-            name?: string | undefined;
-            /** Optional. The size of the buffer used to receive data. The default value is 4096. */
-            bufferSize?: number | undefined;
-            /** Optional. The requested bitrate of the connection to be opened.
-             * For compatibility with the widest range of hardware, this number should match one of commonly-available bitrates,
-             * such as 110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200.
-             * There is no guarantee, of course, that the device connected to the serial port will support the requested bitrate, even if the port itself supports that bitrate.
-             * 9600 will be passed by default. */
-            bitrate?: number | undefined;
-            /** Optional. "eight" will be passed by default. */
-            dataBits?: typeof DataBits[keyof typeof DataBits] | undefined;
-            /** Optional. "no" will be passed by default. */
-            parityBit?: typeof ParityBit[keyof typeof ParityBit] | undefined;
-            /** Optional. "one" will be passed by default. */
-            stopBits?: typeof StopBits[keyof typeof StopBits] | undefined;
-            /** Optional. Flag indicating whether or not to enable RTS/CTS hardware flow control. Defaults to false. */
-            ctsFlowControl?: boolean | undefined;
-            /** Optional. The maximum amount of time (in milliseconds) to wait for new data before raising an onReceiveError event with a "timeout" error.
-             * If zero, receive timeout errors will not be raised for the connection.
-             * Defaults to 0. */
-            receiveTimeout?: number | undefined;
-            /** Optional. The maximum amount of time (in milliseconds) to wait for a send operation to complete before calling the callback with a "timeout" error.
-             * If zero, send timeout errors will not be triggered.
-             * Defaults to 0. */
-            sendTimeout?: number | undefined;
-        }
-
-        /**
-         * @since Chrome 33
-         * @description Returns information about available serial devices on the system. The list is regenerated each time this method is called.
-         * @param callback Called with the list of DeviceInfo objects.
-         */
-        export function getDevices(callback: (ports: DeviceInfo[]) => void): void;
-
-        /**
-         * @since Chrome 33
-         * @description Connects to a given serial port.
-         * @param path The system path of the serial port to open.
-         * @param options Port configuration options.
-         * @param callback Called when the connection has been opened.
-         */
-        export function connect(
-            path: string,
-            options: ConnectionOptions,
-            callback: (connectionInfo: ConnectionInfo) => void,
-        ): void;
-
-        /**
-         * @since Chrome 33
-         * @description Update the option settings on an open serial port connection.
-         * @param connectionId The id of the opened connection.
-         * @param options Port configuration options.
-         * @param callback Called when the configuration has completed.
-         */
-        export function update(
-            connectionId: number,
-            options: ConnectionOptions,
-            callback: (result: boolean) => void,
-        ): void;
-
-        /**
-         * @since Chrome 33
-         * @description Disconnects from a serial port.
-         * @param connectionId The id of the opened connection.
-         * @param callback Called when the connection has been closed.
-         */
-        export function disconnect(connectionId: number, callback: (result: boolean) => void): void;
-
-        /**
-         * @since Chrome 33
-         * @description Pauses or unpauses an open connection.
-         * @param connectionId The id of the opened connection.
-         * @param paused Flag to indicate whether to pause or unpause.
-         * @param callback Called when the connection has been successfully paused or unpaused.
-         */
-        export function setPaused(connectionId: number, paused: boolean, callback: () => void): void;
-
-        /**
-         * @since Chrome 33
-         * @description Retrieves the state of a given connection.
-         * @param callback Called with connection state information when available.
-         */
-        export function getInfo(callback: (connectionInfos: ConnectionInfo[]) => void): void;
-
-        /**
-         * @since Chrome 33
-         * @description Retrieves the list of currently opened serial port connections owned by the application.
-         * @param callback Called with the list of connections when available.
-         */
-        export function getConnections(callback: (connectionInfos: ConnectionInfo[]) => void): void;
-
-        /**
-         * @since Chrome 33
-         * @description Writes data to the given connection.
-         * @param connectionId The id of the connection.
-         * @param data The data to send.
-         * @param callback Called when the operation has completed.
-         */
-        export function send(connectionId: number, data: ArrayBuffer, callback: (sendInfo: object) => void): void;
-
-        /**
-         * @description Flushes all bytes in the given connection's input and output buffers.
-         * @param connectionId The id of the connection.
-         * @param callback
-         */
-        export function flush(connectionId: number, callback: (result: boolean) => void): void;
-
-        /**
-         * @description Retrieves the state of control signals on a given connection.
-         * @param connectionId The id of the connection.
-         * @param callback Called when the control signals are available.
-         */
-        export function getControlSignals(connectionId: number, callback: (signals: object) => void): void;
-
-        /**
-         * @description Sets the state of control signals on a given connection.
-         * @param connectionId The id of the connection.
-         * @param signals The set of signal changes to send to the device:
-         * boolean:    (optional) dtr - DTR (Data Terminal Ready).
-         * boolean:    (optional) rts - RTS (Request To Send).
-         * @param callback Called once the control signals have been set.
-         */
-        export function setControlSignals(
-            connectionId: number,
-            signals: object,
-            callback: (result: boolean) => void,
-        ): void;
-
-        /**
-         * @since Chrome 45
-         * @description Suspends character transmission on a given connection and places the transmission line in a break state until the clearBreak is called.
-         * @param connectionId The id of the connection.
-         * @param callback
-         */
-        export function setBreak(connectionId: number, callback: (result: boolean) => void): void;
-
-        /**
-         * @since Chrome 45
-         * @description Restore character transmission on a given connection and place the transmission line in a nonbreak state.
-         * @param connectionId The id of the connection.
-         * @param callback
-         */
-        export function clearBreak(connectionId: number, callback: (result: boolean) => void): void;
-    }
-
-    export namespace serial.onReceive {
-        export interface OnReceiveInfo {
-            /** The connection identifier. */
-            connectionId: number;
-            /** The data received. */
-            data: ArrayBuffer;
-        }
-
-        /**
-         * @since Chrome 33
-         * @description Event raised when data has been read from the connection.
-         * @param callback
-         */
-        export function addListener(callback: (info: OnReceiveInfo) => void): void;
-    }
-
-    export namespace serial.onReceiveError {
-        export const OnReceiveErrorEnum: {
-            /* The connection was disconnected. */
-            disconnected: "disconnected";
-            /* No data has been received for receiveTimeout milliseconds. */
-            timeout: "timeout";
-            /* The device was most likely disconnected from the host. */
-            device_lost: "device_lost";
-            /* The device detected a break condition. */
-            break: "break";
-            /* The device detected a framing error. */
-            frame_error: "frame_error";
-            /* A character-buffer overrun has occurred. The next character is lost. */
-            overrun: "overrun";
-            /* An input buffer overflow has occurred. There is either no room in the input buffer, or a character was received after the end-of-file (EOF) character. */
-            buffer_overflow: "buffer_overflow";
-            /* The device detected a parity error. */
-            parity_error: "parity_error";
-            /* A system error occurred and the connection may be unrecoverable. */
-            system_error: "system_error";
-        };
-
-        export interface OnReceiveErrorInfo {
-            /** The connection identifier. */
-            connectionId: number;
-            /** The data received. */
-            error: ArrayBuffer;
-        }
-
-        /**
-         * @since Chrome 33
-         * @description Event raised when an error occurred while the runtime was waiting for data on the serial port.
-         * Once this event is raised, the connection may be set to paused. A "timeout" error does not pause the connection.
-         * @param callback
-         */
-        export function addListener(callback: (info: OnReceiveErrorInfo) => void): void;
-    }
-
-    ////////////////////
     // Runtime
     ////////////////////
     /**
@@ -8988,6 +8591,8 @@ declare namespace chrome {
             MIPS = "mips",
             /** Specifies the processer architecture as mips64. */
             MIPS64 = "mips64",
+            /** Specifies the processer architecture as riscv64. */
+            RISCV64 = "riscv64",
         }
 
         /**
@@ -9154,7 +8759,7 @@ declare namespace chrome {
             /** The machine's processor architecture. */
             arch: `${PlatformArch}`;
             /** The native client architecture. This may be different from arch on some platforms. */
-            nacl_arch: `${PlatformNaclArch}`;
+            nacl_arch?: `${PlatformNaclArch}`;
         }
 
         /** An object which allows two way communication with other pages. */
@@ -9243,6 +8848,7 @@ declare namespace chrome {
             | "downloads.ui"
             | "enterprise.deviceAttributes"
             | "enterprise.hardwarePlatform"
+            | "enterprise.login"
             | "enterprise.networkingAttributes"
             | "enterprise.platformKeys"
             | "experimental"
@@ -10266,14 +9872,14 @@ declare namespace chrome {
              */
             get<T = { [key: string]: any }>(callback: (items: T) => void): void;
             /**
-             * Sets the desired access level for the storage area. The default will be only trusted contexts.
+             * Sets the desired access level for the storage area. By default, session storage is restricted to trusted contexts (extension pages and service workers), while managed, local, and sync storage allow access from both trusted and untrusted contexts.
              * @param accessOptions An object containing an accessLevel key which contains the access level of the storage area.
              * @return A void Promise.
              * @since Chrome 102
              */
             setAccessLevel(accessOptions: { accessLevel: AccessLevel }): Promise<void>;
             /**
-             * Sets the desired access level for the storage area. The default will be only trusted contexts.
+             * Sets the desired access level for the storage area. By default, session storage is restricted to trusted contexts (extension pages and service workers), while managed, local, and sync storage allow access from both trusted and untrusted contexts.
              * @param accessOptions An object containing an accessLevel key which contains the access level of the storage area.
              * @param callback Optional.
              * @since Chrome 102
@@ -10377,99 +9983,6 @@ declare namespace chrome {
 
         /** Fired when one or more items change. */
         export var onChanged: StorageChangedEvent;
-    }
-
-    ////////////////////
-    // Socket
-    ////////////////////
-    /**
-     * @deprecated Part of the deprecated Chrome Apps platform
-     */
-    export namespace socket {
-        export interface CreateInfo {
-            socketId: number;
-        }
-
-        export interface AcceptInfo {
-            resultCode: number;
-            socketId?: number | undefined;
-        }
-
-        export interface ReadInfo {
-            resultCode: number;
-            data: ArrayBuffer;
-        }
-
-        export interface WriteInfo {
-            bytesWritten: number;
-        }
-
-        export interface RecvFromInfo {
-            resultCode: number;
-            data: ArrayBuffer;
-            port: number;
-            address: string;
-        }
-
-        export interface SocketInfo {
-            socketType: string;
-            localPort?: number | undefined;
-            peerAddress?: string | undefined;
-            peerPort?: number | undefined;
-            localAddress?: string | undefined;
-            connected: boolean;
-        }
-
-        export interface NetworkInterface {
-            name: string;
-            address: string;
-        }
-
-        export function create(
-            type: string,
-            options?: { [key: string]: unknown },
-            callback?: (createInfo: CreateInfo) => void,
-        ): void;
-        export function destroy(socketId: number): void;
-        export function connect(
-            socketId: number,
-            hostname: string,
-            port: number,
-            callback: (result: number) => void,
-        ): void;
-        export function bind(socketId: number, address: string, port: number, callback: (result: number) => void): void;
-        export function disconnect(socketId: number): void;
-        export function read(socketId: number, bufferSize?: number, callback?: (readInfo: ReadInfo) => void): void;
-        export function write(socketId: number, data: ArrayBuffer, callback?: (writeInfo: WriteInfo) => void): void;
-        export function recvFrom(
-            socketId: number,
-            bufferSize?: number,
-            callback?: (recvFromInfo: RecvFromInfo) => void,
-        ): void;
-        export function sendTo(
-            socketId: number,
-            data: ArrayBuffer,
-            address: string,
-            port: number,
-            callback?: (writeInfo: WriteInfo) => void,
-        ): void;
-        export function listen(
-            socketId: number,
-            address: string,
-            port: number,
-            backlog?: number,
-            callback?: (result: number) => void,
-        ): void;
-        export function accept(socketId: number, callback?: (acceptInfo: AcceptInfo) => void): void;
-        export function setKeepAlive(
-            socketId: number,
-            enable: boolean,
-            delay?: number,
-            callback?: (result: boolean) => void,
-        ): void;
-        export function setNoDelay(socketId: number, noDelay: boolean, callback?: (result: boolean) => void): void;
-        export function getInfo(socketId: number, callback: (result: SocketInfo) => void): void;
-        export function getNetworkList(callback: (result: NetworkInterface[]) => void): void;
     }
 
     ////////////////////

@@ -268,6 +268,10 @@
             "libraryName": "astring",
             "asOfVersion": "1.7.0"
         },
+        "async-redis": {
+            "libraryName": "async-redis",
+            "asOfVersion": "2.0.0"
+        },
         "asyncblock": {
             "libraryName": "asyncblock",
             "asOfVersion": "2.2.11"
@@ -476,6 +480,10 @@
             "libraryName": "bin-version",
             "asOfVersion": "3.1.0"
         },
+        "binary-parser": {
+            "libraryName": "binary-parser",
+            "asOfVersion": "1.8.0"
+        },
         "binaryextensions": {
             "libraryName": "binaryextensions",
             "asOfVersion": "4.0.0"
@@ -551,6 +559,10 @@
         "bs58": {
             "libraryName": "bs58",
             "asOfVersion": "5.0.0"
+        },
+        "bs58check": {
+            "libraryName": "bs58check",
+            "asOfVersion": "3.0.1"
         },
         "bson": {
             "libraryName": "bson",
@@ -695,6 +707,10 @@
         "chalk": {
             "libraryName": "chalk",
             "asOfVersion": "2.2.0"
+        },
+        "chalk-pipe": {
+            "libraryName": "chalk-pipe",
+            "asOfVersion": "5.1.1"
         },
         "change-case": {
             "libraryName": "change-case",
@@ -1072,6 +1088,10 @@
             "libraryName": "codegen.macro",
             "asOfVersion": "4.1.0"
         },
+        "colorbrewer": {
+            "libraryName": "colorbrewer",
+            "asOfVersion": "1.6.0"
+        },
         "colors": {
             "libraryName": "colors",
             "asOfVersion": "1.2.1"
@@ -1159,6 +1179,10 @@
         "contentstack": {
             "libraryName": "contentstack",
             "asOfVersion": "3.11.0"
+        },
+        "contract-proxy-kit": {
+            "libraryName": "contract-proxy-kit",
+            "asOfVersion": "2.0.0"
         },
         "conventional-changelog-preset-loader": {
             "libraryName": "conventional-changelog-preset-loader",
@@ -1308,6 +1332,10 @@
             "libraryName": "cpy",
             "asOfVersion": "7.1.1"
         },
+        "craco__craco": {
+            "libraryName": "@craco/craco",
+            "asOfVersion": "7.0.0"
+        },
         "crc": {
             "libraryName": "crc",
             "asOfVersion": "4.0.0"
@@ -1404,6 +1432,10 @@
         "cypress-axe": {
             "libraryName": "cypress-axe",
             "asOfVersion": "0.11.0"
+        },
+        "cypress-cdp": {
+            "libraryName": "cypress-cdp",
+            "asOfVersion": "1.4.0"
         },
         "cypress-recurse": {
             "libraryName": "cypress-recurse",
@@ -1677,6 +1709,10 @@
             "libraryName": "dva",
             "asOfVersion": "1.1.0"
         },
+        "easy-speech": {
+            "libraryName": "easy-speech",
+            "asOfVersion": "2.1.1"
+        },
         "easy-table": {
             "libraryName": "easy-table",
             "asOfVersion": "1.2.0"
@@ -1873,6 +1909,10 @@
             "libraryName": "error-stack-parser",
             "asOfVersion": "2.0.0"
         },
+        "es-feature-detection": {
+            "libraryName": "es-feature-detection",
+            "asOfVersion": "3.0.0"
+        },
         "es-module-lexer": {
             "libraryName": "es-module-lexer",
             "asOfVersion": "0.4.1"
@@ -1916,6 +1956,10 @@
         "esm-utils": {
             "libraryName": "esm-utils",
             "asOfVersion": "2.0.1"
+        },
+        "eth-sig-util": {
+            "libraryName": "eth-sig-util",
+            "asOfVersion": "2.5.3"
         },
         "ethereumjs-tx": {
             "libraryName": "ethereumjs-tx",
@@ -2128,6 +2172,54 @@
         "fcostarodrigo__walk": {
             "libraryName": "@fcostarodrigo/walk",
             "asOfVersion": "6.0.0"
+        },
+        "feathersjs__authentication": {
+            "libraryName": "@feathersjs/authentication",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__authentication-client": {
+            "libraryName": "@feathersjs/authentication-client",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__authentication-local": {
+            "libraryName": "@feathersjs/authentication-local",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__configuration": {
+            "libraryName": "@feathersjs/configuration",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__errors": {
+            "libraryName": "@feathersjs/errors",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__express": {
+            "libraryName": "@feathersjs/express",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__feathers": {
+            "libraryName": "@feathersjs/feathers",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__primus": {
+            "libraryName": "@feathersjs/primus",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__primus-client": {
+            "libraryName": "@feathersjs/primus-client",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__rest-client": {
+            "libraryName": "@feathersjs/rest-client",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__socketio": {
+            "libraryName": "@feathersjs/socketio",
+            "asOfVersion": "4.3.0"
+        },
+        "feathersjs__socketio-client": {
+            "libraryName": "@feathersjs/socketio-client",
+            "asOfVersion": "4.3.0"
         },
         "fecha": {
             "libraryName": "fecha",
@@ -2685,6 +2777,10 @@
             "libraryName": "@hapi/yar",
             "asOfVersion": "11.0.2"
         },
+        "hapipal__schmervice": {
+            "libraryName": "@hapipal/schmervice",
+            "asOfVersion": "3.0.0"
+        },
         "hapipal__toys": {
             "libraryName": "@hapipal/toys",
             "asOfVersion": "4.0.0"
@@ -2904,6 +3000,10 @@
         "image-type": {
             "libraryName": "image-type",
             "asOfVersion": "4.0.1"
+        },
+        "imagekit": {
+            "libraryName": "imagekit",
+            "asOfVersion": "3.2.0"
         },
         "imagemin-pngquant": {
             "libraryName": "imagemin-pngquant",
@@ -3373,6 +3473,10 @@
             "libraryName": "json-rules-engine",
             "asOfVersion": "4.1.0"
         },
+        "json-schema-faker": {
+            "libraryName": "json-schema-faker",
+            "asOfVersion": "0.5.6"
+        },
         "json-schema-traverse": {
             "libraryName": "json-schema-traverse",
             "asOfVersion": "1.0.0"
@@ -3749,6 +3853,10 @@
             "libraryName": "linqsharp",
             "asOfVersion": "1.0.0"
         },
+        "lint-staged": {
+            "libraryName": "lint-staged",
+            "asOfVersion": "14.0.0"
+        },
         "load-json-file": {
             "libraryName": "load-json-file",
             "asOfVersion": "5.1.0"
@@ -4097,6 +4205,10 @@
             "libraryName": "mem",
             "asOfVersion": "4.2.0"
         },
+        "mem-fs": {
+            "libraryName": "mem-fs",
+            "asOfVersion": "2.2.0"
+        },
         "mem-fs-editor": {
             "libraryName": "mem-fs-editor",
             "asOfVersion": "10.0.1"
@@ -4300,6 +4412,10 @@
         "minizlib": {
             "libraryName": "minizlib",
             "asOfVersion": "3.0.0"
+        },
+        "mixpanel-browser": {
+            "libraryName": "mixpanel-browser",
+            "asOfVersion": "2.66.0"
         },
         "mkdirp": {
             "libraryName": "mkdirp",
@@ -5090,6 +5206,10 @@
             "libraryName": "perfect-scrollbar",
             "asOfVersion": "1.3.0"
         },
+        "persona": {
+            "libraryName": "persona",
+            "asOfVersion": "3.5.2"
+        },
         "pg-connection-string": {
             "libraryName": "pg-connection-string",
             "asOfVersion": "2.0.0"
@@ -5119,6 +5239,10 @@
             "libraryName": "phonegap-plugin-push",
             "asOfVersion": "2.1.2"
         },
+        "photoswipe": {
+            "libraryName": "photoswipe",
+            "asOfVersion": "5.2.5"
+        },
         "php-serialize": {
             "libraryName": "php-serialize",
             "asOfVersion": "4.0.0"
@@ -5138,6 +5262,10 @@
         "pino": {
             "libraryName": "pino",
             "asOfVersion": "7.0.0"
+        },
+        "pino-http": {
+            "libraryName": "pino-http",
+            "asOfVersion": "6.1.0"
         },
         "pino-pretty": {
             "libraryName": "pino-pretty",
@@ -5422,6 +5550,14 @@
         "ps-list": {
             "libraryName": "ps-list",
             "asOfVersion": "6.2.1"
+        },
+        "pseudo-localization": {
+            "libraryName": "pseudo-localization",
+            "asOfVersion": "2.3.7"
+        },
+        "psl": {
+            "libraryName": "psl",
+            "asOfVersion": "1.11.0"
         },
         "ptomasroos__react-native-multi-slider": {
             "libraryName": "@ptomasroos/react-native-multi-slider",
@@ -6043,6 +6179,10 @@
             "libraryName": "react-native-google-analytics-bridge",
             "asOfVersion": "5.3.3"
         },
+        "react-native-incall-manager": {
+            "libraryName": "react-native-incall-manager",
+            "asOfVersion": "4.2.0"
+        },
         "react-native-input-spinner": {
             "libraryName": "react-native-input-spinner",
             "asOfVersion": "1.4.1"
@@ -6111,6 +6251,10 @@
             "libraryName": "react-native-share",
             "asOfVersion": "6.0.0"
         },
+        "react-native-shared-group-preferences": {
+            "libraryName": "react-native-shared-group-preferences",
+            "asOfVersion": "1.1.24"
+        },
         "react-native-status-bar-height": {
             "libraryName": "react-native-status-bar-height",
             "asOfVersion": "2.3.0"
@@ -6142,6 +6286,10 @@
         "react-native-version-number": {
             "libraryName": "react-native-version-number",
             "asOfVersion": "0.3.5"
+        },
+        "react-native-video-player": {
+            "libraryName": "react-native-video-player",
+            "asOfVersion": "0.15.0"
         },
         "react-native-view-pdf": {
             "libraryName": "react-native-view-pdf",
@@ -6310,6 +6458,10 @@
         "reactstrap": {
             "libraryName": "reactstrap",
             "asOfVersion": "8.7.0"
+        },
+        "read": {
+            "libraryName": "read",
+            "asOfVersion": "3.0.0"
         },
         "read-chunk": {
             "libraryName": "read-chunk",
@@ -6498,6 +6650,10 @@
         "rgb2hex": {
             "libraryName": "rgb2hex",
             "asOfVersion": "0.2.1"
+        },
+        "rgrove__parse-xml": {
+            "libraryName": "@rgrove/parse-xml",
+            "asOfVersion": "3.0.0"
         },
         "rimraf": {
             "libraryName": "rimraf",
@@ -6714,6 +6870,10 @@
         "sentry__webpack-plugin": {
             "libraryName": "@sentry/webpack-plugin",
             "asOfVersion": "1.10.0"
+        },
+        "sequelize": {
+            "libraryName": "sequelize",
+            "asOfVersion": "6.12.0"
         },
         "sequelize-cursor-pagination": {
             "libraryName": "sequelize-cursor-pagination",
@@ -7230,6 +7390,10 @@
         "svg-path-bbox": {
             "libraryName": "svg-path-bbox",
             "asOfVersion": "1.1.0"
+        },
+        "svg-spritemap-webpack-plugin": {
+            "libraryName": "svg-spritemap-webpack-plugin",
+            "asOfVersion": "5.0.0"
         },
         "svg-tag-names": {
             "libraryName": "svg-tag-names",
@@ -7759,6 +7923,10 @@
             "libraryName": "vue-scrollto",
             "asOfVersion": "2.17.1"
         },
+        "vue3-json-viewer": {
+            "libraryName": "vue3-json-viewer",
+            "asOfVersion": "2.4.0"
+        },
         "vuedraggable": {
             "libraryName": "vuedraggable",
             "asOfVersion": "2.24.0"
@@ -8186,6 +8354,10 @@
         "xregexp": {
             "libraryName": "xregexp",
             "asOfVersion": "4.4.0"
+        },
+        "xsd-schema-validator": {
+            "libraryName": "xsd-schema-validator",
+            "asOfVersion": "0.9.0"
         },
         "xstyled__styled-components": {
             "libraryName": "@xstyled/styled-components",
