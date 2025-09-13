@@ -1071,24 +1071,79 @@ function testDebugger() {
     });
 }
 
-// https://developer.chrome.com/extensions/declarativeContent
+// https://developer.chrome.com/docs/extensions/reference/api/declarativeContent
 function testDeclarativeContent() {
-    const activeIcon: ImageData = new ImageData(32, 32);
+    const pageStateMatcherProperties: chrome.declarativeContent.PageStateMatcherProperties = {
+        css: [""],
+        isBookmarked: true,
+        pageUrl: {
+            cidrBlocks: [""],
+            hostContains: "",
+            hostEquals: "",
+            hostPrefix: "",
+            hostSuffix: "",
+            originAndPathMatches: "",
+            pathContains: "",
+            pathEquals: "",
+            pathPrefix: "",
+            pathSuffix: "",
+            ports: [1],
+            queryContains: "",
+            queryEquals: "",
+            queryPrefix: "",
+            querySuffix: "",
+            schemes: ["https"],
+            urlContains: "",
+            urlEquals: "",
+            urlMatches: "",
+            urlPrefix: "",
+            urlSuffix: "",
+        },
+    };
+
+    const condition = new chrome.declarativeContent.PageStateMatcher(pageStateMatcherProperties); // ExpectType PageStateMatcher
+
+    const requestContentScriptProperties: chrome.declarativeContent.RequestContentScriptProperties = {
+        allFrames: true,
+        css: [""],
+        js: [""],
+        matchAboutBlank: true,
+    };
+
+    new chrome.declarativeContent.RequestContentScript(requestContentScriptProperties); // ExpectType RequestContentScript
+
+    const imageData = new ImageData(32, 32);
+
+    new chrome.declarativeContent.SetIcon({ imageData }); // ExpectType SetIcon
+
+    const action = new chrome.declarativeContent.ShowAction(); // ExpectType ShowAction
+
+    new chrome.declarativeContent.ShowPageAction(); // ExpectType ShowPageAction
 
     const rule: chrome.events.Rule = {
-        conditions: [
-            new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {
-                    hostContains: "test.com",
-                },
-            }),
-        ],
-        actions: [
-            new chrome.declarativeContent.SetIcon({
-                imageData: activeIcon,
-            }),
-        ],
+        conditions: [condition],
+        actions: [action],
     };
+
+    chrome.declarativeContent.onPageChanged.addRules([rule]); // $ExpectType void
+    chrome.declarativeContent.onPageChanged.addRules([rule], ([rule]) => { // $ExpectType void
+        rule; // $ExpectType Rule
+    });
+
+    chrome.declarativeContent.onPageChanged.getRules(([rule]) => { // $ExpectType void
+        rule; // $ExpectType Rule
+    });
+
+    chrome.declarativeContent.onPageChanged.getRules(([rule]) => { // $ExpectType void
+        rule; // $ExpectType Rule
+    });
+    chrome.declarativeContent.onPageChanged.getRules(["identifier"], ([rule]) => { // $ExpectType void
+        rule; // $ExpectType Rule
+    });
+
+    chrome.declarativeContent.onPageChanged.removeRules(); // $ExpectType void
+    chrome.declarativeContent.onPageChanged.removeRules(() => void 0); // $ExpectType void
+    chrome.declarativeContent.onPageChanged.removeRules(["identifier"], () => void 0); // $ExpectType void
 }
 
 // https://developer.chrome.com/extensions/storage#type-StorageArea
@@ -1324,37 +1379,8 @@ function testTtsEngine() {
     });
 }
 
-function testDevtools() {
-    chrome.devtools.network.onRequestFinished.addListener((request: chrome.devtools.network.Request) => {
-        request; // $ExpectType Request
-        console.log("request: ", request);
-    });
-
-    chrome.devtools.performance.onProfilingStarted.addListener(() => {
-        console.log("Profiling started");
-    });
-
-    chrome.devtools.performance.onProfilingStopped.addListener(() => {
-        console.log("Profiling stopped");
-    });
-
-    chrome.devtools.network.getHAR((harLog: chrome.devtools.network.HARLog) => {
-        harLog; // $ExpectType HARLog
-        console.log("harLog: ", harLog);
-    });
-
-    chrome.devtools.inspectedWindow.eval("1+1", undefined, result => {
-        console.log(result);
-    });
-
-    chrome.devtools.inspectedWindow.reload();
-    chrome.devtools.inspectedWindow.reload({});
-    chrome.devtools.inspectedWindow.reload({
-        userAgent: "Best Browser",
-        ignoreCache: true,
-        injectedScript: "console.log(\"Hello World!\")",
-    });
-
+// https://developer.chrome.com/docs/extensions/reference/api/devtools/recorder
+function testDevtoolsRecorder() {
     const view = chrome.devtools.recorder.createView("title", "replay.html"); // $ExpectType RecorderView
     checkChromeEvent(view.onHidden, () => void 0);
     checkChromeEvent(view.onShown, () => void 0);
@@ -1367,10 +1393,121 @@ function testDevtools() {
     };
     chrome.devtools.recorder.registerRecorderExtensionPlugin({}, "MyPlugin", "application/json"); // $ExpectType void
     chrome.devtools.recorder.registerRecorderExtensionPlugin(plugin, "MyPlugin", "application/json"); // $ExpectType void
+}
 
+// https://developer.chrome.com/docs/extensions/reference/api/devtools/panels
+function testDevtoolsPanels() {
+    const title = "title";
+    const iconPath = "iconPath";
+    const pagePath = "pagePath";
+
+    chrome.devtools.panels.elements; // $ExpectType ElementsPanel
+    chrome.devtools.panels.elements.createSidebarPane(title); // $ExpectType void
+    chrome.devtools.panels.elements.createSidebarPane(title, result => { // $ExpectType void
+        result; // $ExpectType ExtensionSidebarPane
+    });
+    checkChromeEvent(chrome.devtools.panels.elements.onSelectionChanged, () => void 0);
+
+    chrome.devtools.panels.sources; // $ExpectType SourcesPanel
+    chrome.devtools.panels.sources.createSidebarPane(title); // $ExpectType void
+    chrome.devtools.panels.sources.createSidebarPane(title, result => { // $ExpectType void
+        result; // $ExpectType ExtensionSidebarPane
+    });
+    checkChromeEvent(chrome.devtools.panels.sources.onSelectionChanged, () => void 0);
+
+    chrome.devtools.panels.themeName; // $ExpectType "default" | "dark"
+
+    chrome.devtools.panels.create(title, iconPath, pagePath); // $ExpectType void
+    chrome.devtools.panels.create(title, iconPath, pagePath, panel => { // $ExpectType void
+        panel; // $ExpectType ExtensionPanel
+    });
+
+    const url = "url";
+    const lineNumber = 10;
+    const columnNumber = 10;
+
+    chrome.devtools.panels.openResource(url, lineNumber); // $ExpectType void
+    chrome.devtools.panels.openResource(url, lineNumber, columnNumber); // $ExpectType void
+    chrome.devtools.panels.openResource(url, lineNumber, columnNumber, () => void 0); // $ExpectType void
+    chrome.devtools.panels.openResource(url, lineNumber, () => void 0); // $ExpectType void
+
+    chrome.devtools.panels.setOpenResourceHandler(); // $ExpectType void
     chrome.devtools.panels.setOpenResourceHandler((resource, lineNumber) => { // $ExpectType void
         resource; // $ExpectType Resource
         lineNumber; // $ExpectType number
+    });
+}
+
+// https://developer.chrome.com/docs/extensions/reference/api/devtools/inspectedWindow
+function testDevtoolsInspectedWindow() {
+    const expression = "expression";
+
+    const evalOptions: chrome.devtools.inspectedWindow.EvalOptions = {
+        frameURL: "https://example.com",
+        scriptExecutionContext: "script",
+        useContentScriptContext: true,
+    };
+
+    chrome.devtools.inspectedWindow.eval(expression); // $ExpectType void
+    chrome.devtools.inspectedWindow.eval(expression, evalOptions); // $ExpectType void
+    chrome.devtools.inspectedWindow.eval(expression, evalOptions, (result, exceptionInfo) => { // $ExpectType void
+        result; // ExpectType object
+
+        exceptionInfo.code; // ExpectType string
+        exceptionInfo.description; // ExpectType string
+        exceptionInfo.details; // ExpectType unknown[]
+        exceptionInfo.isError; // ExpectType boolean
+        exceptionInfo.isException; // ExpectType boolean
+        exceptionInfo.value; // ExpectType string
+    });
+    chrome.devtools.inspectedWindow.eval(expression, (result) => { // $ExpectType void
+        result; // ExpectType object
+    });
+    chrome.devtools.inspectedWindow.eval<{ title: string }>(expression, evalOptions, (result) => { // $ExpectType void
+        result.title; // ExpectType string
+    });
+
+    chrome.devtools.inspectedWindow.getResources((resources) => { // $ExpectType void
+        resources; // ExpectType Resource[]
+    });
+
+    const reloadOptions: chrome.devtools.inspectedWindow.ReloadOptions = {
+        ignoreCache: true,
+        injectedScript: "script",
+        userAgent: "userAgent",
+    };
+
+    chrome.devtools.inspectedWindow.reload(); // $ExpectType void
+    chrome.devtools.inspectedWindow.reload(reloadOptions); // $ExpectType void
+
+    checkChromeEvent(chrome.devtools.inspectedWindow.onResourceAdded, (resource) => {
+        resource; // ExpectType Resource
+    });
+
+    checkChromeEvent(chrome.devtools.inspectedWindow.onResourceContentCommitted, (resource, content) => {
+        resource; // ExpectType Resource
+        content; // ExpectType string
+    });
+}
+
+// https://developer.chrome.com/docs/extensions/reference/api/devtools/performance
+function testDevtoolsPerformance() {
+    checkChromeEvent(chrome.devtools.performance.onProfilingStarted, () => void 0);
+    checkChromeEvent(chrome.devtools.performance.onProfilingStopped, () => void 0);
+}
+
+// https://developer.chrome.com/docs/extensions/reference/api/devtools/network
+function testDevtoolsNetwork() {
+    chrome.devtools.network.getHAR((harLog) => {
+        harLog; // $ExpectType Log
+    });
+
+    checkChromeEvent(chrome.devtools.network.onNavigated, (url) => {
+        url; // $ExpectType string
+    });
+
+    checkChromeEvent(chrome.devtools.network.onRequestFinished, (request) => {
+        request; // $ExpectType Request
     });
 }
 
@@ -1807,7 +1944,7 @@ async function testAction() {
     });
 }
 
-// https://developer.chrome.com/docs/extensions/reference/alarms/
+// https://developer.chrome.com/docs/extensions/reference/api/alarms
 async function testAlarms() {
     const alarmCreateInfo: chrome.alarms.AlarmCreateInfo = {
         delayInMinutes: 1,
@@ -1823,10 +1960,10 @@ async function testAlarms() {
     chrome.alarms.create("name", alarmCreateInfo, () => {}).then(() => {});
 
     chrome.alarms.getAll(); // $ExpectType Promise<Alarm[]>
-    chrome.alarms.getAll((alarms) => { // $ExpectType void
-        alarms[0].name; // $ExpectType string
-        alarms[0].periodInMinutes; // $ExpectType number | undefined
-        alarms[0].scheduledTime; // $ExpectType number
+    chrome.alarms.getAll(([alarm]) => { // $ExpectType void
+        alarm.name; // $ExpectType string
+        alarm.periodInMinutes; // $ExpectType number | undefined
+        alarm.scheduledTime; // $ExpectType number
     });
     // @ts-expect-error
     chrome.alarms.getAll(() => {}).then(() => {});
@@ -1853,19 +1990,17 @@ async function testAlarms() {
     chrome.alarms.get("name"); // $ExpectType Promise<Alarm | undefined>
     chrome.alarms.get((alarm) => { // $ExpectType void
         alarm; // $ExpectType Alarm | undefined
-        if (alarm) {
-            alarm.name; // $ExpectType string
-            alarm.periodInMinutes; // $ExpectType number | undefined
-            alarm.scheduledTime; // $ExpectType number
-        }
+        if (!alarm) return;
+        alarm.name; // $ExpectType string
+        alarm.periodInMinutes; // $ExpectType number | undefined
+        alarm.scheduledTime; // $ExpectType number
     });
     chrome.alarms.get("name", (alarm) => { // $ExpectType void
         alarm; // $ExpectType Alarm | undefined
-        if (alarm) {
-            alarm.name; // $ExpectType string
-            alarm.periodInMinutes; // $ExpectType number | undefined
-            alarm.scheduledTime; // $ExpectType number
-        }
+        if (!alarm) return;
+        alarm.name; // $ExpectType string
+        alarm.periodInMinutes; // $ExpectType number | undefined
+        alarm.scheduledTime; // $ExpectType number
     });
     // @ts-expect-error
     chrome.alarms.get("name", () => {}).then(() => {});
@@ -3345,18 +3480,6 @@ function testStorageForPromise() {
     );
 }
 
-function testExtensionSendRequest() {
-    chrome.extension.sendRequest("dummy-id", "Hello World!");
-    chrome.extension.sendRequest("dummy-id", "Hello World!", console.log);
-    chrome.extension.sendRequest("dummy-id", "Hello World!", console.log);
-    chrome.extension.sendRequest<string>("dummy-id", "Hello World!", console.log);
-    chrome.extension.sendRequest<string, number>("dummy-id", "Hello World!", console.log);
-    // @ts-expect-error
-    chrome.extension.sendRequest<number>("dummy-id", "Hello World!", console.log);
-    // @ts-expect-error
-    chrome.extension.sendRequest<string, string>("dummy-id", "Hello World!", (num: number) => alert(num + 1));
-}
-
 // https://developer.chrome.com/docs/extensions/reference/api/contextMenus
 function testContextMenus() {
     chrome.contextMenus.ContextType.ACTION === "action";
@@ -3660,13 +3783,42 @@ function testDocumentScan() {
     });
 }
 
-// https://developer.chrome.com/docs/extensions/reference/enterprise_deviceAttributes
+// https://developer.chrome.com/docs/extensions/reference/api/enterprise/deviceAttributes
 function testEnterpriseDeviceAttributes() {
-    chrome.enterprise.deviceAttributes.getDirectoryDeviceId((deviceId) => {});
-    chrome.enterprise.deviceAttributes.getDeviceSerialNumber((serialNumber) => {});
-    chrome.enterprise.deviceAttributes.getDeviceAssetId((assetId) => {});
-    chrome.enterprise.deviceAttributes.getDeviceAnnotatedLocation((annotatedLocation) => {});
-    chrome.enterprise.deviceAttributes.getDeviceHostname((hostName) => {});
+    chrome.enterprise.deviceAttributes.getDeviceAnnotatedLocation(); // $ExpectType Promise<string>
+    chrome.enterprise.deviceAttributes.getDeviceAnnotatedLocation(annotatedLocation => { // $ExpectType void
+        annotatedLocation; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.enterprise.deviceAttributes.getDeviceAnnotatedLocation(() => {}).then(() => {});
+
+    chrome.enterprise.deviceAttributes.getDeviceAssetId(); // $ExpectType Promise<string>
+    chrome.enterprise.deviceAttributes.getDeviceAssetId((assetId) => { // $ExpectType void
+        assetId; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.enterprise.deviceAttributes.getDeviceAssetId(() => {}).then(() => {});
+
+    chrome.enterprise.deviceAttributes.getDeviceHostname(); // $ExpectType Promise<string>
+    chrome.enterprise.deviceAttributes.getDeviceHostname((hostName) => { // $ExpectType void
+        hostName; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.enterprise.deviceAttributes.getDeviceHostname(() => {}).then(() => {});
+
+    chrome.enterprise.deviceAttributes.getDeviceSerialNumber(); // $ExpectType Promise<string>
+    chrome.enterprise.deviceAttributes.getDeviceSerialNumber((serialNumber) => { // $ExpectType void
+        serialNumber; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.enterprise.deviceAttributes.getDeviceSerialNumber(() => {}).then(() => {});
+
+    chrome.enterprise.deviceAttributes.getDirectoryDeviceId(); // $ExpectType Promise<string>
+    chrome.enterprise.deviceAttributes.getDirectoryDeviceId((deviceId) => { // $ExpectType void
+        deviceId; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.enterprise.deviceAttributes.getDirectoryDeviceId(() => {}).then(() => {});
 }
 
 // https://developer.chrome.com/docs/extensions/reference/api/enterprise/hardwarePlatform
@@ -3903,18 +4055,39 @@ async function testCommands() {
     });
 }
 
-// https://developer.chrome.com/docs/extensions/reference/i18n
+// https://developer.chrome.com/docs/extensions/reference/api/i18n
 function testI18n() {
-    chrome.i18n.getAcceptLanguages((languages) => {});
-    chrome.i18n.getMessage("dummy-id", "Hello World!");
-    chrome.i18n.getUILanguage();
-    chrome.i18n.detectLanguage("dummy-id", (result) => {});
-}
+    const text = "text";
+    chrome.i18n.detectLanguage(text); // ExpectType Promise<DetectLanguageResult>
+    chrome.i18n.detectLanguage(text, (result) => { // $ExpectType void
+        result.isReliable; // $ExpectType boolean
+        result.languages[0].language; // $ExpectType string
+        result.languages[0].percentage; // $ExpectType number
+    });
+    // @ts-expect-error
+    chrome.i18n.detectLanguage(text, () => {}).then(() => {});
 
-// https://developer.chrome.com/docs/extensions/reference/i18n
-async function testI18nForPromise() {
-    await chrome.i18n.getAcceptLanguages();
-    await chrome.i18n.detectLanguage("dummy-id");
+    chrome.i18n.getAcceptLanguages(); // $ExpectType Promise<string[]>
+    chrome.i18n.getAcceptLanguages(([language]) => {
+        language; // $ExpectType string
+    });
+    // @ts-expect-error
+    chrome.i18n.getAcceptLanguages(() => {}).then(() => {});
+
+    const messageName = "messageName";
+    const substitutions = ["hello", 10];
+
+    const options: chrome.i18n.GetMessageOptions = {
+        escapeLt: true,
+    };
+
+    chrome.i18n.getMessage(messageName); // $ExpectType string
+    chrome.i18n.getMessage(messageName, substitutions); // $ExpectType string
+    chrome.i18n.getMessage(messageName, substitutions, options); // $ExpectType string
+    // @ts-expect-error
+    chrome.i18n.getMessage(messageName, 10);
+
+    chrome.i18n.getUILanguage(); // $ExpectType string
 }
 
 async function testPageCapture() {
@@ -4203,59 +4376,385 @@ async function testDownloadsForPromise() {
     await chrome.downloads.setUiOptions({ enabled: true });
 }
 
-// https://developer.chrome.com/docs/extensions/reference/extension
+// https://developer.chrome.com/docs/extensions/reference/api/extension
 function testExtension() {
-    chrome.extension.getBackgroundPage();
-    chrome.extension.getURL("/");
-    chrome.extension.setUpdateUrlData("");
-    chrome.extension.getViews({});
-    chrome.extension.isAllowedFileSchemeAccess((isAllowedAccess) => {});
-    chrome.extension.isAllowedIncognitoAccess((isAllowedAccess) => {});
-    chrome.extension.getExtensionTabs(1);
+    chrome.extension.ViewType.POPUP === "popup";
+    chrome.extension.ViewType.TAB === "tab";
+
+    chrome.extension.inIncognitoContext; // ExpectType boolean
+
+    chrome.extension.lastError; // ExpectType chrome.runtime.LastError
+
+    chrome.extension.getBackgroundPage(); // ExpectType Window | null
+
+    const fetchProperties: chrome.extension.FetchProperties = {
+        tabId: 1,
+        type: "tab",
+        windowId: 1,
+    };
+
+    chrome.extension.getViews(fetchProperties); // ExpectType Window[]
+
+    chrome.extension.isAllowedFileSchemeAccess(); // ExpectType Promise<boolean>
+    chrome.extension.isAllowedIncognitoAccess((isAllowedAccess) => { // ExpectType void
+        isAllowedAccess; // ExpectType boolean
+    });
+    // @ts-expect-error
+    chrome.extension.isAllowedFileSchemeAccess(() => {}).then(() => {});
+
+    chrome.extension.isAllowedIncognitoAccess(); // ExpectType Promise<boolean>
+    chrome.extension.isAllowedIncognitoAccess((isAllowedAccess) => { // ExpectType void
+        isAllowedAccess; // ExpectType boolean
+    });
+    // @ts-expect-error
+    chrome.extension.isAllowedIncognitoAccess(() => {}).then(() => {});
+
+    chrome.extension.setUpdateUrlData("data"); // ExpectType void
+
+    chrome.extension.getExtensionTabs(); // ExpectType Window[]
+    chrome.extension.getExtensionTabs(1); // ExpectType Window[]
+
+    chrome.extension.getURL("/path"); // ExpectType string
+
+    const extensionId = "dummy-id";
+    const request = {};
+
+    chrome.extension.sendRequest(request); // ExpectType void
+    chrome.extension.sendRequest(request, (response) => { // ExpectType void
+        response; // ExpectType any
+    });
+    chrome.extension.sendRequest(extensionId, request); // ExpectType void
+    chrome.extension.sendRequest(extensionId, request, (response) => { // ExpectType void
+        response; // ExpectType any
+    });
+    chrome.extension.sendRequest<number, boolean>(1, (response) => {
+        response; // ExpectType boolean
+    });
+    chrome.extension.sendRequest<number, boolean>(extensionId, 1, (response) => {
+        response; // ExpectType boolean
+    });
+
+    checkChromeEvent(chrome.extension.onRequest, (request, sender, sendResponse) => {
+        request; // ExpectType any
+        sender; // ExpectType chrome.extension.MessageSender
+        sendResponse({}); // ExpectType void
+    });
+
+    checkChromeEvent(chrome.extension.onRequestExternal, (request, sender, sendResponse) => {
+        request; // ExpectType any
+        sender; // ExpectType chrome.extension.MessageSender
+        sendResponse({}); // ExpectType void
+    });
 }
 
-// https://developer.chrome.com/docs/extensions/reference/extension
-async function testExtensionForPromise() {
-    await chrome.extension.isAllowedFileSchemeAccess();
-    await chrome.extension.isAllowedIncognitoAccess();
-}
-
-// https://developer.chrome.com/docs/extensions/reference/fontSettings
+// https://developer.chrome.com/docs/extensions/reference/api/fontSettings
 function testFontSettings() {
-    chrome.fontSettings.setDefaultFontSize({ pixelSize: 1 }, () => {});
+    chrome.fontSettings.GenericFamily.CURSIVE === "cursive";
+    chrome.fontSettings.GenericFamily.FANTASY === "fantasy";
+    chrome.fontSettings.GenericFamily.FIXED === "fixed";
+    chrome.fontSettings.GenericFamily.MATH === "math";
+    chrome.fontSettings.GenericFamily.SANSSERIF === "sansserif";
+    chrome.fontSettings.GenericFamily.SERIF === "serif";
+    chrome.fontSettings.GenericFamily.STANDARD === "standard";
+
+    chrome.fontSettings.LevelOfControl.CONTROLLABLE_BY_THIS_EXTENSION === "controllable_by_this_extension";
+    chrome.fontSettings.LevelOfControl.CONTROLLED_BY_OTHER_EXTENSIONS === "controlled_by_other_extensions";
+    chrome.fontSettings.LevelOfControl.CONTROLLED_BY_THIS_EXTENSION === "controlled_by_this_extension";
+    chrome.fontSettings.LevelOfControl.NOT_CONTROLLABLE === "not_controllable";
+
+    chrome.fontSettings.ScriptCode.AFAK === "Afak";
+    chrome.fontSettings.ScriptCode.ARAB === "Arab";
+    chrome.fontSettings.ScriptCode.ARMI === "Armi";
+    chrome.fontSettings.ScriptCode.ARMN === "Armn";
+    chrome.fontSettings.ScriptCode.AVST === "Avst";
+    chrome.fontSettings.ScriptCode.BALI === "Bali";
+    chrome.fontSettings.ScriptCode.BAMU === "Bamu";
+    chrome.fontSettings.ScriptCode.BASS === "Bass";
+    chrome.fontSettings.ScriptCode.BATK === "Batk";
+    chrome.fontSettings.ScriptCode.BENG === "Beng";
+    chrome.fontSettings.ScriptCode.BLIS === "Blis";
+    chrome.fontSettings.ScriptCode.BOPO === "Bopo";
+    chrome.fontSettings.ScriptCode.BRAH === "Brah";
+    chrome.fontSettings.ScriptCode.BRAI === "Brai";
+    chrome.fontSettings.ScriptCode.BUGI === "Bugi";
+    chrome.fontSettings.ScriptCode.BUHD === "Buhd";
+    chrome.fontSettings.ScriptCode.CAKM === "Cakm";
+    chrome.fontSettings.ScriptCode.CANS === "Cans";
+    chrome.fontSettings.ScriptCode.CARI === "Cari";
+    chrome.fontSettings.ScriptCode.CHAM === "Cham";
+    chrome.fontSettings.ScriptCode.CHER === "Cher";
+    chrome.fontSettings.ScriptCode.CIRT === "Cirt";
+    chrome.fontSettings.ScriptCode.COPT === "Copt";
+    chrome.fontSettings.ScriptCode.CPRT === "Cprt";
+    chrome.fontSettings.ScriptCode.CYRL === "Cyrl";
+    chrome.fontSettings.ScriptCode.CYRS === "Cyrs";
+    chrome.fontSettings.ScriptCode.DEVA === "Deva";
+    chrome.fontSettings.ScriptCode.DSRT === "Dsrt";
+    chrome.fontSettings.ScriptCode.DUPL === "Dupl";
+    chrome.fontSettings.ScriptCode.EGYD === "Egyd";
+    chrome.fontSettings.ScriptCode.EGYH === "Egyh";
+    chrome.fontSettings.ScriptCode.EGYP === "Egyp";
+    chrome.fontSettings.ScriptCode.ELBA === "Elba";
+    chrome.fontSettings.ScriptCode.ETHI === "Ethi";
+    chrome.fontSettings.ScriptCode.GEOK === "Geok";
+    chrome.fontSettings.ScriptCode.GEOR === "Geor";
+    chrome.fontSettings.ScriptCode.GLAG === "Glag";
+    chrome.fontSettings.ScriptCode.GOTH === "Goth";
+    chrome.fontSettings.ScriptCode.GRAN === "Gran";
+    chrome.fontSettings.ScriptCode.GREK === "Grek";
+    chrome.fontSettings.ScriptCode.GUJR === "Gujr";
+    chrome.fontSettings.ScriptCode.GURU === "Guru";
+    chrome.fontSettings.ScriptCode.HANG === "Hang";
+    chrome.fontSettings.ScriptCode.HANI === "Hani";
+    chrome.fontSettings.ScriptCode.HANO === "Hano";
+    chrome.fontSettings.ScriptCode.HANS === "Hans";
+    chrome.fontSettings.ScriptCode.HANT === "Hant";
+    chrome.fontSettings.ScriptCode.HEBR === "Hebr";
+    chrome.fontSettings.ScriptCode.HLUW === "Hluw";
+    chrome.fontSettings.ScriptCode.HMNG === "Hmng";
+    chrome.fontSettings.ScriptCode.HUNG === "Hung";
+    chrome.fontSettings.ScriptCode.INDS === "Inds";
+    chrome.fontSettings.ScriptCode.ITAL === "Ital";
+    chrome.fontSettings.ScriptCode.JAVA === "Java";
+    chrome.fontSettings.ScriptCode.JPAN === "Jpan";
+    chrome.fontSettings.ScriptCode.JURC === "Jurc";
+    chrome.fontSettings.ScriptCode.KALI === "Kali";
+    chrome.fontSettings.ScriptCode.KHAR === "Khar";
+    chrome.fontSettings.ScriptCode.KHMR === "Khmr";
+    chrome.fontSettings.ScriptCode.KHOJ === "Khoj";
+    chrome.fontSettings.ScriptCode.KNDA === "Knda";
+    chrome.fontSettings.ScriptCode.KPEL === "Kpel";
+    chrome.fontSettings.ScriptCode.KTHI === "Kthi";
+    chrome.fontSettings.ScriptCode.LANA === "Lana";
+    chrome.fontSettings.ScriptCode.LAOO === "Laoo";
+    chrome.fontSettings.ScriptCode.LATF === "Latf";
+    chrome.fontSettings.ScriptCode.LATG === "Latg";
+    chrome.fontSettings.ScriptCode.LATN === "Latn";
+    chrome.fontSettings.ScriptCode.LEPC === "Lepc";
+    chrome.fontSettings.ScriptCode.LIMB === "Limb";
+    chrome.fontSettings.ScriptCode.LINA === "Lina";
+    chrome.fontSettings.ScriptCode.LINB === "Linb";
+    chrome.fontSettings.ScriptCode.LISU === "Lisu";
+    chrome.fontSettings.ScriptCode.LOMA === "Loma";
+    chrome.fontSettings.ScriptCode.LYCI === "Lyci";
+    chrome.fontSettings.ScriptCode.LYDI === "Lydi";
+    chrome.fontSettings.ScriptCode.MAND === "Mand";
+    chrome.fontSettings.ScriptCode.MANI === "Mani";
+    chrome.fontSettings.ScriptCode.MAYA === "Maya";
+    chrome.fontSettings.ScriptCode.MEND === "Mend";
+    chrome.fontSettings.ScriptCode.MERC === "Merc";
+    chrome.fontSettings.ScriptCode.MERO === "Mero";
+    chrome.fontSettings.ScriptCode.MLYM === "Mlym";
+    chrome.fontSettings.ScriptCode.MONG === "Mong";
+    chrome.fontSettings.ScriptCode.MOON === "Moon";
+    chrome.fontSettings.ScriptCode.MROO === "Mroo";
+    chrome.fontSettings.ScriptCode.MTEI === "Mtei";
+    chrome.fontSettings.ScriptCode.MYMR === "Mymr";
+    chrome.fontSettings.ScriptCode.NARB === "Narb";
+    chrome.fontSettings.ScriptCode.NBAT === "Nbat";
+    chrome.fontSettings.ScriptCode.NKGB === "Nkgb";
+    chrome.fontSettings.ScriptCode.NKOO === "Nkoo";
+    chrome.fontSettings.ScriptCode.NSHU === "Nshu";
+    chrome.fontSettings.ScriptCode.OGAM === "Ogam";
+    chrome.fontSettings.ScriptCode.OLCK === "Olck";
+    chrome.fontSettings.ScriptCode.ORKH === "Orkh";
+    chrome.fontSettings.ScriptCode.ORYA === "Orya";
+    chrome.fontSettings.ScriptCode.OSMA === "Osma";
+    chrome.fontSettings.ScriptCode.PALM === "Palm";
+    chrome.fontSettings.ScriptCode.PERM === "Perm";
+    chrome.fontSettings.ScriptCode.PHAG === "Phag";
+    chrome.fontSettings.ScriptCode.PHLI === "Phli";
+    chrome.fontSettings.ScriptCode.PHLP === "Phlp";
+    chrome.fontSettings.ScriptCode.PHLV === "Phlv";
+    chrome.fontSettings.ScriptCode.PHNX === "Phnx";
+    chrome.fontSettings.ScriptCode.PLRD === "Plrd";
+    chrome.fontSettings.ScriptCode.PRTI === "Prti";
+    chrome.fontSettings.ScriptCode.RJNG === "Rjng";
+    chrome.fontSettings.ScriptCode.RORO === "Roro";
+    chrome.fontSettings.ScriptCode.RUNR === "Runr";
+    chrome.fontSettings.ScriptCode.SAMR === "Samr";
+    chrome.fontSettings.ScriptCode.SARA === "Sara";
+    chrome.fontSettings.ScriptCode.SARB === "Sarb";
+    chrome.fontSettings.ScriptCode.SAUR === "Saur";
+    chrome.fontSettings.ScriptCode.SGNW === "Sgnw";
+    chrome.fontSettings.ScriptCode.SHAW === "Shaw";
+    chrome.fontSettings.ScriptCode.SHRD === "Shrd";
+    chrome.fontSettings.ScriptCode.SIND === "Sind";
+    chrome.fontSettings.ScriptCode.SINH === "Sinh";
+    chrome.fontSettings.ScriptCode.SORA === "Sora";
+    chrome.fontSettings.ScriptCode.SUND === "Sund";
+    chrome.fontSettings.ScriptCode.SYLO === "Sylo";
+    chrome.fontSettings.ScriptCode.SYRC === "Syrc";
+    chrome.fontSettings.ScriptCode.SYRE === "Syre";
+    chrome.fontSettings.ScriptCode.SYRJ === "Syrj";
+    chrome.fontSettings.ScriptCode.SYRN === "Syrn";
+    chrome.fontSettings.ScriptCode.TAGB === "Tagb";
+    chrome.fontSettings.ScriptCode.TAKR === "Takr";
+    chrome.fontSettings.ScriptCode.TALE === "Tale";
+    chrome.fontSettings.ScriptCode.TALU === "Talu";
+    chrome.fontSettings.ScriptCode.TAML === "Taml";
+    chrome.fontSettings.ScriptCode.TANG === "Tang";
+    chrome.fontSettings.ScriptCode.TAVT === "Tavt";
+    chrome.fontSettings.ScriptCode.TELU === "Telu";
+    chrome.fontSettings.ScriptCode.TENG === "Teng";
+    chrome.fontSettings.ScriptCode.TFNG === "Tfng";
+    chrome.fontSettings.ScriptCode.TGLG === "Tglg";
+    chrome.fontSettings.ScriptCode.THAA === "Thaa";
+    chrome.fontSettings.ScriptCode.THAI === "Thai";
+    chrome.fontSettings.ScriptCode.TIBT === "Tibt";
+    chrome.fontSettings.ScriptCode.TIRH === "Tirh";
+    chrome.fontSettings.ScriptCode.UGAR === "Ugar";
+    chrome.fontSettings.ScriptCode.VAII === "Vaii";
+    chrome.fontSettings.ScriptCode.VISP === "Visp";
+    chrome.fontSettings.ScriptCode.WARA === "Wara";
+    chrome.fontSettings.ScriptCode.WOLE === "Wole";
+    chrome.fontSettings.ScriptCode.XPEO === "Xpeo";
+    chrome.fontSettings.ScriptCode.XSUX === "Xsux";
+    chrome.fontSettings.ScriptCode.YIII === "Yiii";
+    chrome.fontSettings.ScriptCode.ZMTH === "Zmth";
+    chrome.fontSettings.ScriptCode.ZSYM === "Zsym";
+    chrome.fontSettings.ScriptCode.ZYYY === "Zyyy";
+
+    chrome.fontSettings.clearDefaultFixedFontSize(); // Expected Promise<void>
+    chrome.fontSettings.clearDefaultFontSize(() => void 0); // Expected void
+    chrome.fontSettings.clearDefaultFixedFontSize(); // Expected Promise<void>
+    chrome.fontSettings.clearDefaultFixedFontSize({}, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.clearDefaultFixedFontSize({}, () => {}).then(() => {});
+
+    chrome.fontSettings.clearDefaultFontSize(); // Expected Promise<void>
+    chrome.fontSettings.clearDefaultFontSize(() => void 0); // Expected void
+    chrome.fontSettings.clearDefaultFontSize({}); // Expected Promise<void>
+    chrome.fontSettings.clearDefaultFontSize({}, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.clearDefaultFontSize({}, () => {}).then(() => {});
+
+    const clearFontDetails: chrome.fontSettings.ClearFontDetails = {
+        genericFamily: "standard",
+        script: "Afak",
+    };
+
+    chrome.fontSettings.clearFont(clearFontDetails); // Expected Promise<void>
+    chrome.fontSettings.clearFont(clearFontDetails, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.clearFont(clearFontDetails, () => {}).then(() => {});
+
+    chrome.fontSettings.clearMinimumFontSize(); // Expected Promise<void>
+    chrome.fontSettings.clearMinimumFontSize(() => void 0); // Expected void
+    chrome.fontSettings.clearMinimumFontSize({}); // Expected Promise<void>
+    chrome.fontSettings.clearMinimumFontSize({}, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.clearMinimumFontSize(() => {}).then(() => {});
+
+    chrome.fontSettings.getDefaultFixedFontSize(); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getDefaultFixedFontSize((details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    chrome.fontSettings.getDefaultFixedFontSize({}); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getDefaultFixedFontSize({}, (details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    // @ts-expect-error
+    chrome.fontSettings.getDefaultFixedFontSize(() => {}).then(() => {});
+
+    chrome.fontSettings.getDefaultFontSize(); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getDefaultFontSize((details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    chrome.fontSettings.getDefaultFontSize({}); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getDefaultFontSize({}, (details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    // @ts-expect-error
+    chrome.fontSettings.getDefaultFontSize({}, () => {}).then(() => {});
+
+    const getFontDetails: chrome.fontSettings.GetFontDetails = {
+        genericFamily: "standard",
+        script: "Afak",
+    };
+
+    chrome.fontSettings.getFont(getFontDetails); // Expected Promise<GetFontResult>
+    chrome.fontSettings.getFont(getFontDetails, (details) => { // Expected void
+        details.fontId; // Expected string
+        details.levelOfControl; // Expected LevelOfControl
+    });
     // @ts-expect-error
     chrome.fontSettings.getFont({}, (details) => {});
-    // @ts-expect-error
-    chrome.fontSettings.getFont({ genericFamily: "" }, (details) => {});
-    chrome.fontSettings.getFont({ genericFamily: "cursive" }, (details) => {});
-    chrome.fontSettings.getDefaultFontSize({}, (options) => {});
-    chrome.fontSettings.getMinimumFontSize({}, (options) => {});
-    chrome.fontSettings.setMinimumFontSize({ pixelSize: 1 }, () => {});
-    chrome.fontSettings.getDefaultFixedFontSize({}, (details) => {});
-    chrome.fontSettings.clearDefaultFontSize({}, () => {});
-    chrome.fontSettings.setDefaultFixedFontSize({ pixelSize: 1 }, () => {});
-    chrome.fontSettings.clearFont({ genericFamily: "cursive" }, () => {});
-    chrome.fontSettings.setFont({ genericFamily: "cursive", fontId: "" }, () => {});
-    chrome.fontSettings.clearMinimumFontSize({}, () => {});
-    chrome.fontSettings.getFontList((results) => {});
-    chrome.fontSettings.clearDefaultFixedFontSize({}, () => {});
-}
 
-// https://developer.chrome.com/docs/extensions/reference/fontSettings
-async function testFontSettingsForPromise() {
-    await chrome.fontSettings.setDefaultFontSize({ pixelSize: 1 });
-    await chrome.fontSettings.getFont({ genericFamily: "cursive" });
-    await chrome.fontSettings.getDefaultFontSize({});
-    await chrome.fontSettings.getMinimumFontSize({});
-    await chrome.fontSettings.setMinimumFontSize({ pixelSize: 1 });
-    await chrome.fontSettings.getDefaultFixedFontSize({});
-    await chrome.fontSettings.clearDefaultFontSize({});
-    await chrome.fontSettings.setDefaultFixedFontSize({ pixelSize: 1 });
-    await chrome.fontSettings.clearFont({ genericFamily: "cursive" });
-    await chrome.fontSettings.setFont({ genericFamily: "cursive", fontId: "" });
-    await chrome.fontSettings.clearMinimumFontSize({});
-    await chrome.fontSettings.getFontList();
-    await chrome.fontSettings.clearDefaultFixedFontSize({});
+    chrome.fontSettings.getFontList(); // Expected Promise<FontName[]>
+    chrome.fontSettings.getFontList(([result]) => { // Expected void
+        result.fontId; // Expected string
+        result.displayName; // Expected string
+    });
+
+    chrome.fontSettings.getMinimumFontSize(); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getMinimumFontSize((details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    chrome.fontSettings.getMinimumFontSize({}); // Expected Promise<FontSizeResult>
+    chrome.fontSettings.getMinimumFontSize({}, (details) => { // Expected void
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+    // @ts-expect-error
+    chrome.fontSettings.getMinimumFontSize({}, () => {}).then(() => {});
+
+    const setFontSizeDetails: chrome.fontSettings.FontSizeDetails = {
+        pixelSize: 12,
+    };
+
+    chrome.fontSettings.setDefaultFixedFontSize(setFontSizeDetails); // Expected Promise<void>
+    chrome.fontSettings.setDefaultFixedFontSize(setFontSizeDetails, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.setDefaultFixedFontSize(() => {}).then(() => {});
+
+    chrome.fontSettings.setDefaultFontSize(setFontSizeDetails); // Expected Promise<void>
+    chrome.fontSettings.setDefaultFontSize(setFontSizeDetails, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.setDefaultFontSize(() => {}).then(() => {});
+
+    const setFontDetails: chrome.fontSettings.SetFontDetails = {
+        genericFamily: "standard",
+        script: "Afak",
+        fontId: "fontId",
+    };
+
+    chrome.fontSettings.setFont(setFontDetails); // Expected Promise<void>
+    chrome.fontSettings.setFont(setFontDetails, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.setFont(() => {}).then(() => {});
+
+    chrome.fontSettings.setMinimumFontSize(setFontSizeDetails); // Expected Promise<void>
+    chrome.fontSettings.setMinimumFontSize(setFontSizeDetails, () => void 0); // Expected void
+    // @ts-expect-error
+    chrome.fontSettings.setMinimumFontSize(() => {}).then(() => {});
+
+    checkChromeEvent(chrome.fontSettings.onDefaultFixedFontSizeChanged, (details) => {
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+
+    checkChromeEvent(chrome.fontSettings.onDefaultFontSizeChanged, (details) => {
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
+
+    checkChromeEvent(chrome.fontSettings.onFontChanged, (details) => {
+        details.fontId; // Expected string
+        details.genericFamily; // Expected GenericFamily
+        details.levelOfControl; // Expected LevelOfControl
+        details.script; // Expected ScriptCode | undefined
+    });
+
+    checkChromeEvent(chrome.fontSettings.onMinimumFontSizeChanged, (details) => {
+        details.pixelSize; // Expected number
+        details.levelOfControl; // Expected LevelOfControl
+    });
 }
 
 // https://developer.chrome.com/docs/extensions/reference/api/gcm
@@ -4407,6 +4906,34 @@ function testIdentity() {
     chrome.identity.removeCachedAuthToken(invalidTokenDetails, () => void 0).then(() => void 0);
 }
 
+// https://developer.chrome.com/docs/extensions/reference/api/idle
+function testIdle() {
+    chrome.idle.IdleState.ACTIVE === "active";
+    chrome.idle.IdleState.IDLE === "idle";
+    chrome.idle.IdleState.LOCKED === "locked";
+
+    chrome.idle.getAutoLockDelay(); // $ExpectType Promise<number>
+    chrome.idle.getAutoLockDelay(delay => { // $ExpectType void
+        delay; // $ExpectType number
+    });
+    // @ts-expect-error
+    chrome.idle.getAutoLockDelay(() => {}).then(() => {});
+
+    const intervalInSeconds = 2;
+    chrome.idle.queryState(intervalInSeconds); // $ExpectType Promise<"active" | "idle" | "locked">
+    chrome.idle.queryState(intervalInSeconds, (newState) => { // $ExpectType void
+        newState; // $ExpectType "active" | "idle" | "locked"
+    });
+    // @ts-expect-error
+    chrome.idle.queryState(intervalInSeconds, () => {}).then(() => {});
+
+    chrome.idle.setDetectionInterval(intervalInSeconds); // $ExpectType void
+
+    checkChromeEvent(chrome.idle.onStateChanged, (newState) => {
+        newState; // $ExpectType "active" | "idle" | "locked"
+    });
+}
+
 // https://developer.chrome.com/docs/extensions/reference/topSites/
 function testTopSites() {
     chrome.topSites.get(() => {});
@@ -4429,6 +4956,16 @@ async function testOffscreenDocument() {
     });
     await chrome.offscreen.hasDocument();
     await chrome.offscreen.closeDocument();
+}
+
+// https://developer.chrome.com/docs/extensions/reference/api/fileBrowserHandler
+function testFileBrowserHandler() {
+    checkChromeEvent(chrome.fileBrowserHandler.onExecute, (id, details) => {
+        id; // $ExpectType string
+        details; // $ExpectType FileHandlerExecuteEventDetails
+        details.entries; // $ExpectType any[]
+        details.tab_id; // $ExpectType number | undefined
+    });
 }
 
 // https://developer.chrome.com/docs/extensions/reference/api/fileSystemProvider
