@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - labels
   pull_request:
     branches:
-      - master
+      - production
   schedule:
     # 12PM UTC -> 4AM Pacific
     - cron: '0 12 * * *'
