@@ -755,6 +755,22 @@ import { promisify } from "node:util";
             type: "pkcs8",
         },
     });
+
+    const mldsaRes: {
+        publicKey: Buffer;
+        privateKey: string;
+    } = crypto.generateKeyPairSync("ml-dsa-44", {
+        publicKeyEncoding: {
+            format: "der",
+            type: "spki",
+        },
+        privateKeyEncoding: {
+            cipher: "some-cipher",
+            format: "pem",
+            passphrase: "secret",
+            type: "pkcs8",
+        },
+    });
 }
 
 {
@@ -879,6 +895,21 @@ import { promisify } from "node:util";
         },
         (err: NodeJS.ErrnoException | null, publicKey: string, privateKey: string) => {},
     );
+
+    crypto.generateKeyPair(
+        "ml-dsa-44",
+        {
+            publicKeyEncoding: {
+                format: "pem",
+                type: "spki",
+            },
+            privateKeyEncoding: {
+                format: "pem",
+                type: "pkcs8",
+            },
+        },
+        (err: NodeJS.ErrnoException | null, publicKey: string, privateKey: string) => {},
+    );
 }
 
 {
@@ -971,6 +1002,20 @@ import { promisify } from "node:util";
         publicKey: string;
         privateKey: string;
     }> = generateKeyPairPromisified("x25519", {
+        publicKeyEncoding: {
+            format: "pem",
+            type: "spki",
+        },
+        privateKeyEncoding: {
+            format: "pem",
+            type: "pkcs8",
+        },
+    });
+
+    const mldsaRes: Promise<{
+        publicKey: string;
+        privateKey: string;
+    }> = generateKeyPairPromisified("ml-dsa-44", {
         publicKeyEncoding: {
             format: "pem",
             type: "spki",
@@ -1100,8 +1145,16 @@ import { promisify } from "node:util";
 }
 
 {
+    // $ExpectType string
     crypto.hash("sha1", "Node.js");
+    // $ExpectType Buffer || Buffer<ArrayBufferLike>
     crypto.hash("sha1", Buffer.from("Tm9kZS5qcw==", "base64"), "buffer");
+    // $ExpectType string
+    crypto.hash("shake256", "Node.js", { outputLength: 256 });
+    // $ExpectType string
+    crypto.hash("shake256", Buffer.allocUnsafe(0), { outputEncoding: "base64" });
+    // $ExpectType Buffer || Buffer<ArrayBufferLike>
+    crypto.hash("shake256", "Node.js", { outputEncoding: "buffer", outputLength: 256 });
 }
 
 {

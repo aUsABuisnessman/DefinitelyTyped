@@ -31,3 +31,16 @@ GL.openSettingsMenu;
 api.onStop();
 // @ts-expect-error
 api.openSettingsMenu();
+
+api.UI.showModal(document.createElement("div"), {
+    buttons: [
+        { text: "Ok", onClick: () => {} },
+        { text: "Ok", onClick: () => true },
+    ],
+});
+
+api.patcher.before({}, "foo", () => {});
+api.patcher.before({}, "foo", () => true);
+GL.net.gamemode; // $ExpectType string
+api.net.gamemode; // $ExpectType string
+api.net.onLoad((type, gamemode) => {});
