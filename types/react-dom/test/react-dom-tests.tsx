@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import * as ReactDOM from "react-dom";
 import * as ReactDOMClient from "react-dom/client";
 import * as ReactDOMServer from "react-dom/server";
@@ -343,7 +343,7 @@ function pipeableStreamDocumentedStringExample() {
 }
 
 /**
- * source: https://reactjs.org/docs/react-dom-server.html#rendertoreadablestream
+ * source: https://react.dev/reference/react-dom/server/renderToReadableStream
  */
 async function readableStreamDocumentedExample() {
     const controller = new AbortController();
@@ -383,7 +383,7 @@ async function readableStreamDocumentedExample() {
 }
 
 /**
- * source: https://reactjs.org/docs/react-dom-server.html#rendertoreadablestream
+ * source: https://react.dev/reference/react-dom/server/renderToReadableStream
  */
 async function readableStreamDocumentedStringExample() {
     const controller = new AbortController();

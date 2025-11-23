@@ -246,7 +246,7 @@ declare namespace chrome {
         ): void;
 
         /**
-         * Gets the badge text of the action. If no tab is specified, the non-tab-specific badge text is returned. If {@link declarativeNetRequest.ExtensionActionOptions.displayActionCountAsBadgeText displayActionCountAsBadgeText} is enabled, a placeholder text will be returned unless the {@link runtime.ManifestPermissions declarativeNetRequestFeedback} permission is present or tab-specific badge text was provided.
+         * Gets the badge text of the action. If no tab is specified, the non-tab-specific badge text is returned. If {@link declarativeNetRequest.ExtensionActionOptions.displayActionCountAsBadgeText displayActionCountAsBadgeText} is enabled, a placeholder text will be returned unless the {@link runtime.ManifestPermission declarativeNetRequestFeedback} permission is present or tab-specific badge text was provided.
          *
          * Can return its result via Promise.
          */
@@ -867,174 +867,120 @@ declare namespace chrome {
      */
     export namespace browserAction {
         export interface BadgeBackgroundColorDetails {
-            /** An array of four integers in the range [0,255] that make up the RGBA color of the badge. For example, opaque red is [255, 0, 0, 255]. Can also be a string with a CSS value, with opaque red being #FF0000 or #F00. */
+            /** An array of four integers in the range 0-255 that make up the RGBA color of the badge. Can also be a string with a CSS hex color value; for example, `#FF0000` or `#F00` (red). Renders colors at full opacity. */
             color: string | extensionTypes.ColorArray;
-            /** Optional. Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.  */
-            tabId?: number | undefined;
+            /** Limits the change to when a particular tab is selected. Automatically resets when the tab is closed. */
+            tabId?: number | null | undefined;
         }
 
         export interface BadgeTextDetails {
-            /** Any number of characters can be passed, but only about four can fit in the space. */
+            /** Any number of characters can be passed, but only about four can fit into the space. If an empty string (`''`) is passed, the badge text is cleared. If `tabId` is specified and `text` is null, the text for the specified tab is cleared and defaults to the global badge text. */
             text?: string | null | undefined;
-            /** Optional. Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.  */
-            tabId?: number | undefined;
+            /** Limits the change to when a particular tab is selected. Automatically resets when the tab is closed. */
+            tabId?: number | null | undefined;
         }
 
         export interface TitleDetails {
             /** The string the browser action should display when moused over. */
             title: string;
             /** Optional. Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.  */
-            tabId?: number | null;
+            tabId?: number | null | undefined;
         }
 
         export interface TabDetails {
-            /** Optional. Specify the tab to get the information. If no tab is specified, the non-tab-specific information is returned.  */
-            tabId?: number | null;
+            /** The ID of the tab to query state for. If no tab is specified, the non-tab-specific state is returned. */
+            tabId?: number | null | undefined;
         }
 
-        export interface TabIconDetails {
-            /** Optional. Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals scale, then image with size scale * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.imageData = {'19': foo}'  */
-            path?: string | { [index: string]: string } | undefined;
-            /** Optional. Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.  */
-            tabId?: number | undefined;
-            /** Optional. Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals scale, then image with size scale * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'19': foo}'  */
-            imageData?: ImageData | { [index: number]: ImageData } | undefined;
-        }
+        export type TabIconDetails =
+            & {
+                /** Limits the change to when a particular tab is selected. Automatically resets when the tab is closed. */
+                tabId?: number | null | undefined;
+            }
+            & (
+                | {
+                    /** Either an ImageData object or a dictionary {size -> ImageData} representing an icon to be set. If the icon is specified as a dictionary, the image used is chosen depending on the screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then an image with size `scale` \* n is selected, where _n_ is the size of the icon in the UI. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'16': foo}' */
+                    imageData: ImageData | { [index: number]: ImageData };
+                    /** Either a relative image path or a dictionary {size -> relative image path} pointing to an icon to be set. If the icon is specified as a dictionary, the image used is chosen depending on the screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then an image with size `scale` \* n is selected, where _n_ is the size of the icon in the UI. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.path = {'16': foo}' */
+                    path?: string | { [index: string]: string } | undefined;
+                }
+                | {
+                    /** Either an ImageData object or a dictionary {size -> ImageData} representing an icon to be set. If the icon is specified as a dictionary, the image used is chosen depending on the screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then an image with size `scale` \* n is selected, where _n_ is the size of the icon in the UI. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'16': foo}' */
+                    imageData?: ImageData | { [index: number]: ImageData } | undefined;
+                    /** Either a relative image path or a dictionary {size -> relative image path} pointing to an icon to be set. If the icon is specified as a dictionary, the image used is chosen depending on the screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then an image with size `scale` \* n is selected, where _n_ is the size of the icon in the UI. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.path = {'16': foo}' */
+                    path: string | { [index: string]: string };
+                }
+            );
 
         export interface PopupDetails {
-            /** Optional. Limits the change to when a particular tab is selected. Automatically resets when the tab is closed.  */
-            tabId?: number | null;
-            /** The html file to show in a popup. If set to the empty string (''), no popup is shown. */
+            /** Limits the change to when a particular tab is selected. Automatically resets when the tab is closed. */
+            tabId?: number | null | undefined;
+            /** The relative path to the HTML file to show in a popup. If set to the empty string (`''`), no popup is shown.*/
             popup: string;
         }
 
-        export interface BrowserClickedEvent extends chrome.events.Event<(tab: chrome.tabs.Tab) => void> {}
-
         /**
-         * @since Chrome 22
-         * Enables the browser action for a tab. By default, browser actions are enabled.
-         * @param tabId The id of the tab for which you want to modify the browser action.
-         * @return The `enable` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
-         */
-        export function enable(tabId?: number | null): Promise<void>;
-        /**
-         * @since Chrome 22
-         * Enables the browser action for a tab. By default, browser actions are enabled.
-         * @param tabId The id of the tab for which you want to modify the browser action.
-         * @param callback Supported since Chrome 67
+         * Enables the browser action for a tab. Defaults to enabled.
+         * @param tabId The ID of the tab for which to modify the browser action.
+         * @param callback Since Chrome 67
          */
         export function enable(callback?: () => void): void;
         export function enable(tabId: number | null | undefined, callback?: () => void): void;
+
         /**
          * Sets the background color for the badge.
-         * @return The `setBadgeBackgroundColor` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
-         */
-        export function setBadgeBackgroundColor(details: BadgeBackgroundColorDetails): Promise<void>;
-        /**
-         * Sets the background color for the badge.
-         * @param callback Supported since Chrome 67
+         * @param callback Since Chrome 67
          */
         export function setBadgeBackgroundColor(details: BadgeBackgroundColorDetails, callback?: () => void): void;
+
         /**
          * Sets the badge text for the browser action. The badge is displayed on top of the icon.
-         * @return The `setBadgeText` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         * @param callback Since Chrome 67
          */
-        export function setBadgeText(details: BadgeTextDetails): Promise<void>;
+        export function setBadgeText(details: BadgeTextDetails, callback?: () => void): void;
+
         /**
-         * Sets the badge text for the browser action. The badge is displayed on top of the icon.
-         * @param callback Supported since Chrome 67
+         * Sets the title of the browser action. This title appears in the tooltip.
+         * @param callback Since Chrome 67
          */
-        export function setBadgeText(details: BadgeTextDetails, callback: () => void): void;
-        /**
-         * Sets the title of the browser action. This shows up in the tooltip.
-         * @return The `setTitle` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
-         */
-        export function setTitle(details: TitleDetails): Promise<void>;
-        /**
-         * Sets the title of the browser action. This shows up in the tooltip.
-         * @param callback Supported since Chrome 67
-         */
-        export function setTitle(details: TitleDetails, callback: () => void): void;
-        /**
-         * @since Chrome 19
-         * Gets the badge text of the browser action. If no tab is specified, the non-tab-specific badge text is returned.
-         * @param callback Supported since Chrome 67
-         */
+        export function setTitle(details: TitleDetails, callback?: () => void): void;
+
+        /** Gets the badge text of the browser action. If no tab is specified, the non-tab-specific badge text is returned. */
         export function getBadgeText(details: TabDetails, callback: (result: string) => void): void;
+
         /**
-         * @since Chrome 19
-         * Gets the badge text of the browser action. If no tab is specified, the non-tab-specific badge text is returned.
-         * @return The `getBadgeText` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getBadgeText(details: TabDetails): Promise<string>;
-        /**
-         * Sets the html document to be opened as a popup when the user clicks on the browser action's icon.
-         * @return The `setPopup` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
-         */
-        export function setPopup(details: PopupDetails): Promise<void>;
-        /**
-         * Sets the html document to be opened as a popup when the user clicks on the browser action's icon.
-         * @param callback Supported since Chrome 67
+         * Sets the HTML document to be opened as a popup when the user clicks the browser action icon.
+         * @param callback Since Chrome 67
          */
         export function setPopup(details: PopupDetails, callback?: () => void): void;
+
         /**
-         * @since Chrome 22
          * Disables the browser action for a tab.
-         * @param tabId The id of the tab for which you want to modify the browser action.
-         * @return The `disable` method provides its result via callback or returned as a `Promise` (MV3 only). It has no parameters.
+         * @param tabId The ID of the tab for which to modify the browser action.
+         * @param callback since Chrome 67
          */
-        export function disable(tabId?: number | null): Promise<void>;
-        /**
-         * @since Chrome 22
-         * Disables the browser action for a tab.
-         * @param tabId The id of the tab for which you want to modify the browser action.
-         * @param callback Supported since Chrome 67
-         */
-        export function disable(callback: () => void): void;
-        export function disable(tabId?: number | null, callback?: () => void): void;
-        /**
-         * @since Chrome 19
-         * Gets the title of the browser action.
-         */
+        export function disable(callback?: () => void): void;
+        export function disable(tabId: number | null | undefined, callback?: () => void): void;
+
+        /** Gets the title of the browser action. */
         export function getTitle(details: TabDetails, callback: (result: string) => void): void;
-        /**
-         * @since Chrome 19
-         * Gets the title of the browser action.
-         * @return The `getTitle` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getTitle(details: TabDetails): Promise<string>;
-        /**
-         * @since Chrome 19
-         * Gets the background color of the browser action.
-         */
+
+        /** Gets the background color of the browser action. */
         export function getBadgeBackgroundColor(
             details: TabDetails,
             callback: (result: extensionTypes.ColorArray) => void,
         ): void;
-        /**
-         * @since Chrome 19
-         * Gets the background color of the browser action.
-         * @return The `getBadgeBackgroundColor` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getBadgeBackgroundColor(details: TabDetails): Promise<extensionTypes.ColorArray>;
-        /**
-         * @since Chrome 19
-         * Gets the html document set as the popup for this browser action.
-         */
+
+        /** Gets the HTML document that is set as the popup for this browser action. */
         export function getPopup(details: TabDetails, callback: (result: string) => void): void;
+
         /**
-         * @since Chrome 19
-         * Gets the html document set as the popup for this browser action.
-         * @return The `getPopup` method provides its result via callback or returned as a `Promise` (MV3 only).
-         */
-        export function getPopup(details: TabDetails): Promise<string>;
-        /**
-         * Sets the icon for the browser action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element, or as dictionary of either one of those. Either the path or the imageData property must be specified.
+         * Sets the icon for the browser action. The icon can be specified as the path to an image file, as the pixel data from a canvas element, or as a dictionary of one of those. Either the `path` or the `imageData` property must be specified.
          */
         export function setIcon(details: TabIconDetails, callback?: () => void): void;
 
-        /** Fired when a browser action icon is clicked. This event will not fire if the browser action has a popup. */
-        export var onClicked: BrowserClickedEvent;
+        /** Fired when a browser action icon is clicked. Does not fire if the browser action has a popup. */
+        export const onClicked: events.Event<(tab: chrome.tabs.Tab) => void>;
     }
 
     ////////////////////
@@ -1708,6 +1654,12 @@ declare namespace chrome {
         export enum Scope {
             REGULAR = "regular",
             INCOGNITO_SESSION_ONLY = "incognito_session_only",
+        }
+
+        /** @since Chrome 141 */
+        export enum SoundContentSetting {
+            ALLOW = "allow",
+            BLOCK = "block",
         }
 
         /**
@@ -2489,109 +2441,261 @@ declare namespace chrome {
      * @deprecated Check out the {@link declarativeNetRequest} API instead
      */
     export namespace declarativeWebRequest {
+        /** Filters request headers for various criteria. Multiple criteria are evaluated as a conjunction. */
         export interface HeaderFilter {
+            /** Matches if the header name is equal to the specified string. */
             nameEquals?: string | undefined;
+            /** Matches if the header value contains all of the specified strings. */
             valueContains?: string | string[] | undefined;
+            /** Matches if the header name ends with the specified string. */
             nameSuffix?: string | undefined;
+            /** Matches if the header value ends with the specified string. */
             valueSuffix?: string | undefined;
+            /** Matches if the header value starts with the specified string. */
             valuePrefix?: string | undefined;
+            /** Matches if the header name contains all of the specified strings. */
             nameContains?: string | string[] | undefined;
+            /** Matches if the header value is equal to the specified string. */
             valueEquals?: string | undefined;
+            /** Matches if the header name starts with the specified string. */
             namePrefix?: string | undefined;
         }
 
+        /** Adds the response header to the response of this web request. As multiple response headers may share the same name, you need to first remove and then add a new response header in order to replace one. */
         export interface AddResponseHeader {
+            /** HTTP response header name. */
             name: string;
+            /** HTTP response header value. */
             value: string;
         }
 
+        /** Removes one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface RemoveResponseCookie {
-            filter: ResponseCookie;
+            /** Filter for cookies that will be removed. All empty entries are ignored. */
+            filter: FilterResponseCookie;
         }
 
+        /** Removes all response headers of the specified names and values. */
         export interface RemoveResponseHeader {
+            /** HTTP request header name (case-insensitive). */
             name: string;
+            /** HTTP request header value (case-insensitive). */
             value?: string | undefined;
         }
 
+        /** Matches network events by various criteria. */
         export interface RequestMatcher {
+            /** Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list. */
             contentType?: string[] | undefined;
-            url?: chrome.events.UrlFilter | undefined;
+            /** Matches if the conditions of the UrlFilter are fulfilled for the URL of the request. */
+            url?: events.UrlFilter | undefined;
+            /** Matches if the MIME media type of a response (from the HTTP Content-Type header) is not contained in the list. */
             excludeContentType?: string[] | undefined;
+            /** Matches if none of the request headers is matched by any of the HeaderFilters. */
+            excludeResponseHeaders?: HeaderFilter[] | undefined;
+            /** Matches if none of the response headers is matched by any of the HeaderFilters. */
             excludeResponseHeader?: HeaderFilter[] | undefined;
-            resourceType?: string | undefined;
+            /**
+             * Matches if the conditions of the UrlFilter are fulfilled for the 'first party' URL of the request. The 'first party' URL of a request, when present, can be different from the request's target URL, and describes what is considered 'first party' for the sake of third-party checks for cookies.
+             * @deprecated since Chrome 82
+             */
+            firstPartyForCookiesUrl?: events.UrlFilter | undefined;
+            /** Matches if some of the request headers is matched by one of the HeaderFilters. */
+            requestHeaders?: HeaderFilter[] | undefined;
+            /** Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out. */
+            resourceType?: `${webRequest.ResourceType}`[] | undefined;
+            /** Matches if some of the response headers is matched by one of the HeaderFilters. */
             responseHeaders?: HeaderFilter[] | undefined;
+            /** Contains a list of strings describing stages. Allowed values are 'onBeforeRequest', 'onBeforeSendHeaders', 'onHeadersReceived', 'onAuthRequired'. If this attribute is present, then it limits the applicable stages to those listed. Note that the whole condition is only applicable in stages compatible with all attributes. */
+            stages?: `${Stage}`[] | undefined;
+            /**
+             * If set to true, matches requests that are subject to third-party cookie policies. If set to false, matches all other requests.
+             * @deprecated since Chrome 87
+             */
+            thirdPartyForCookies?: boolean | undefined;
         }
 
+        /** Masks all rules that match the specified criteria. */
         export interface IgnoreRules {
-            lowerPriorityThan: number;
+            /** If set, rules with the specified tag are ignored. This ignoring is not persisted, it affects only rules and their actions of the same network request stage. Note that rules are executed in descending order of their priorities. This action affects rules of lower priority than the current rule. Rules with the same priority may or may not be ignored. */
+            hasTag?: string | undefined;
+            /** If set, rules with a lower priority than the specified value are ignored. This boundary is not persisted, it affects only rules and their actions of the same network request stage. */
+            lowerPriorityThan?: number | undefined;
         }
 
+        /** Declarative event action that redirects a network request to an empty document. */
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
         export interface RedirectToEmptyDocument {}
 
+        /** Declarative event action that redirects a network request. */
         export interface RedirectRequest {
+            /** Destination to where the request is redirected. */
             redirectUrl: string;
         }
 
+        /** A specification of a cookie in HTTP Responses. */
         export interface ResponseCookie {
+            /** Value of the Domain cookie attribute. */
             domain?: string | undefined;
+            /** Name of a cookie. */
             name?: string | undefined;
+            /** Value of the Expires cookie attribute. */
             expires?: string | undefined;
+            /** Value of the Max-Age cookie attribute */
             maxAge?: number | undefined;
+            /** Value of a cookie, may be padded in double-quotes. */
             value?: string | undefined;
+            /** Value of the Path cookie attribute. */
             path?: string | undefined;
+            /** Existence of the HttpOnly cookie attribute. */
             httpOnly?: string | undefined;
+            /** Existence of the Secure cookie attribute. */
             secure?: string | undefined;
         }
 
+        /** Adds a cookie to the response or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface AddResponseCookie {
             cookie: ResponseCookie;
         }
 
+        /** Edits one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface EditResponseCookie {
+            /** Filter for cookies that will be modified. All empty entries are ignored. */
             filter: ResponseCookie;
+            /** Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed. */
             modification: ResponseCookie;
         }
 
+        /** Declarative event action that cancels a network request. */
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
         export interface CancelRequest {}
 
+        /** Removes the request header of the specified name. Do not use SetRequestHeader and RemoveRequestHeader with the same header name on the same request. Each request header name occurs only once in each request. */
         export interface RemoveRequestHeader {
+            /** HTTP request header name (case-insensitive). */
             name: string;
         }
 
+        /** Edits one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface EditRequestCookie {
+            /** Filter for cookies that will be modified. All empty entries are ignored. */
             filter: RequestCookie;
+            /** Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed. */
             modification: RequestCookie;
         }
 
-        export interface SetRequestHeader {
-            name: string;
-            value: string;
-        }
-
-        export interface RequestCookie {
+        /** A filter of a cookie in HTTP Responses. */
+        export interface FilterResponseCookie {
+            /** Inclusive lower bound on the cookie lifetime (specified in seconds after current time). Only cookies whose expiration date-time is set to 'now + ageLowerBound' or later fulfill this criterion. Session cookies do not meet the criterion of this filter. The cookie lifetime is calculated from either 'max-age' or 'expires' cookie attributes. If both are specified, 'max-age' is used to calculate the cookie lifetime. */
+            ageLowerBound?: number | undefined;
+            /** Inclusive upper bound on the cookie lifetime (specified in seconds after current time). Only cookies whose expiration date-time is in the interval [now, now + ageUpperBound] fulfill this criterion. Session cookies and cookies whose expiration date-time is in the past do not meet the criterion of this filter. The cookie lifetime is calculated from either 'max-age' or 'expires' cookie attributes. If both are specified, 'max-age' is used to calculate the cookie lifetime. */
+            ageUpperBound?: number | undefined;
+            /** Value of the Domain cookie attribute. */
+            domain?: string | undefined;
+            /** Value of the Expires cookie attribute. */
+            expires?: string | undefined;
+            /** Existence of the HttpOnly cookie attribute. */
+            httpOnly?: string | undefined;
+            /** Value of the Max-Age cookie attribute */
+            maxAge?: number | undefined;
+            /** Name of a cookie. */
             name?: string | undefined;
+            /** Value of the Path cookie attribute. */
+            path?: string | undefined;
+            /** Existence of the Secure cookie attribute. */
+            secure?: string | undefined;
+            /** Filters session cookies. Session cookies have no lifetime specified in any of 'max-age' or 'expires' attributes. */
+            session?: boolean | undefined;
+            /** Value of a cookie, may be padded in double-quotes. */
             value?: string | undefined;
         }
 
+        /** Sets the request header of the specified name to the specified value. If a header with the specified name did not exist before, a new one is created. Header name comparison is always case-insensitive. Each request header name occurs only once in each request. */
+        export interface SetRequestHeader {
+            /** HTTP request header name. */
+            name: string;
+            /** HTTP request header value. */
+            value: string;
+        }
+
+        /** A filter or specification of a cookie in HTTP Requests. */
+        export interface RequestCookie {
+            /** Name of a cookie. */
+            name?: string | undefined;
+            /** Value of a cookie, may be padded in double-quotes. */
+            value?: string | undefined;
+        }
+
+        /** Redirects a request by applying a regular expression on the URL. The regular expressions use the RE2 syntax. */
         export interface RedirectByRegEx {
+            /** Destination pattern. */
             to: string;
+            /** A match pattern that may contain capture groups. Capture groups are referenced in the Perl syntax ($1, $2, ...) instead of the RE2 syntax (\1, \2, ...) in order to be closer to JavaScript Regular Expressions. */
             from: string;
         }
 
+        /** Declarative event action that redirects a network request to a transparent image. */
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
         export interface RedirectToTransparentImage {}
 
+        /** Adds a cookie to the request or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface AddRequestCookie {
             cookie: RequestCookie;
         }
 
+        /** Removes one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive. */
         export interface RemoveRequestCookie {
+            /** Filter for cookies that will be removed. All empty entries are ignored. */
             filter: RequestCookie;
         }
 
-        export interface RequestedEvent extends chrome.events.Event<() => void> {}
+        export enum Stage {
+            ON_AUTH_REQUIRED = "onAuthRequired",
+            ON_BEFORE_REQUEST = "onBeforeRequest",
+            ON_BEFORE_SEND_HEADERS = "onBeforeSendHeaders",
+            ON_HEADERS_RECEIVED = "onHeadersReceived",
+        }
 
-        export var onRequest: RequestedEvent;
+        export interface MessageDetails {
+            /** A UUID of the document that made the request. */
+            documentId?: string;
+            /** The lifecycle the document is in. */
+            documentLifecycle: extensionTypes.DocumentLifecycle;
+            /** The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (`type` is `main_frame` or `sub_frame`), `frameId` indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab. */
+            frameId: number;
+            /** The type of frame the navigation occurred in. */
+            frameType: extensionTypes.FrameType;
+            /** The message sent by the calling script. */
+            message: string;
+            /** Standard HTTP method. */
+            method: string;
+            /** A UUID of the parent document owning this frame. This is not set if there is no parent. */
+            parentDocumentId?: string;
+            /** ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists. */
+            parentFrameId: number;
+            /** The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request. */
+            requestId: string;
+            /** The stage of the network request during which the event was triggered. */
+            stage: `${Stage}`;
+            /** The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab. */
+            tabId: number;
+            /** The time when this signal is triggered, in milliseconds since the epoch. */
+            timeStamp: number;
+            /** How the requested resource will be used. */
+            type: `${webRequest.ResourceType}`;
+            url: string;
+        }
+
+        export interface SendMessageToExtension {
+            /** The value that will be passed in the message attribute of the dictionary that is passed to the event handler. */
+            message: string;
+        }
+
+        /** Fired when a message is sent via {@link declarativeWebRequest.SendMessageToExtension} from an action of the declarative web request API. */
+        export const onMessage: events.Event<(details: MessageDetails) => void>;
+
+        /** Provides the Declarative Event API consisting of `addRules`, `removeRules`, and `getRules`. */
+        export const onRequest: events.Event<() => void>;
     }
 
     ////////////////////
@@ -2914,6 +3018,12 @@ declare namespace chrome {
             onHidden: events.Event<() => void>;
         }
 
+        /**
+         * Theme used by DevTools.
+         * @since Chrome 99
+         */
+        export type Theme = "default" | "dark";
+
         /** Elements panel. */
         export const elements: ElementsPanel;
 
@@ -2947,6 +3057,12 @@ declare namespace chrome {
         ): void;
 
         /**
+         * Specifies the function to be called when the current theme changes in DevTools. To unset the handler, either call the method with no parameters or pass `null` as the parameter.
+         * @since Chrome 99
+         */
+        export function setThemeChangeHandler(callback?: (theme: Theme) => void): void;
+
+        /**
          * Requests DevTools to open a URL in a Developer Tools panel.
          * @param url The URL of the resource to open.
          * @param lineNumber Specifies the line number to scroll to when the resource is loaded.
@@ -2964,7 +3080,7 @@ declare namespace chrome {
          * The name of the color theme set in user's DevTools settings.
          * @since Chrome 59
          */
-        export const themeName: "default" | "dark";
+        export const themeName: Theme;
     }
 
     ////////////////////
@@ -3642,6 +3758,7 @@ declare namespace chrome {
             SAFE = "safe",
             /** The user has accepted the dangerous download. */
             ACCEPTED = "accepted",
+            /** Enterprise-related values. */
             ALLOWLISTED_BY_POLICY = "allowlistedByPolicy",
             ASYNC_SCANNING = "asyncScanning",
             ASYNC_LOCAL_PASSWORD_SCANNING = "asyncLocalPasswordScanning",
@@ -3656,6 +3773,8 @@ declare namespace chrome {
             PROMPT_FOR_LOCAL_PASSWORD_SCANNING = "promptForLocalPasswordScanning",
             ACCOUNT_COMPROMISE = "accountCompromise",
             BLOCKED_SCAN_FAILED = "blockedScanFailed",
+            /** For use by the Secure Enterprise Browser extension. When required, Chrome will block the download to disc and download the file directly to Google Drive. */
+            FORCE_SAVE_TO_GDRIVE = "forceSaveToGdrive",
         }
 
         export interface DownloadItem {
@@ -6901,16 +7020,26 @@ declare namespace chrome {
      */
     export namespace loginState {
         export enum ProfileType {
+            /** Specifies that the extension is in the signin profile. */
             SIGNIN_PROFILE = "SIGNIN_PROFILE",
+            /** Specifies that the extension is in the user profile. */
             USER_PROFILE = "USER_PROFILE",
+            /** Specifies that the extension is in the lock screen profile. */
+            LOCK_PROFILE = "LOCK_PROFILE",
         }
 
         export enum SessionState {
+            /** Specifies that the session state is unknown. */
             UNKNOWN = "UNKNOWN",
+            /** Specifies that the user is in the out-of-box-experience screen. */
             IN_OOBE_SCREEN = "IN_OOBE_SCREEN",
+            /** Specifies that the user is in the login screen. */
             IN_LOGIN_SCREEN = "IN_LOGIN_SCREEN",
+            /** Specifies that the user is in the session. */
             IN_SESSION = "IN_SESSION",
+            /** Specifies that the user is in the lock screen. */
             IN_LOCK_SCREEN = "IN_LOCK_SCREEN",
+            /** Specifies that the device is in RMA mode, finalizing repairs. */
             IN_RMA_SCREEN = "IN_RMA_SCREEN",
         }
 
@@ -7551,8 +7680,6 @@ declare namespace chrome {
      * MV2 only
      */
     export namespace pageAction {
-        export interface PageActionClickedEvent extends chrome.events.Event<(tab: chrome.tabs.Tab) => void> {}
-
         export interface TitleDetails {
             /** The id of the tab for which you want to modify the page action. */
             tabId: number;
@@ -7560,77 +7687,77 @@ declare namespace chrome {
             title: string;
         }
 
-        export interface GetDetails {
-            /** Specify the tab to get the title from. */
+        export interface TabDetails {
+            /** The ID of the tab to query state for. */
             tabId: number;
         }
 
         export interface PopupDetails {
             /** The id of the tab for which you want to modify the page action. */
             tabId: number;
-            /** The html file to show in a popup. If set to the empty string (''), no popup is shown. */
+            /** The relative path to the HTML file to show in a popup. If set to the empty string (`''`), no popup is shown. */
             popup: string;
         }
 
-        export interface IconDetails {
-            /** The id of the tab for which you want to modify the page action. */
-            tabId: number;
-            /**
-             * Optional.
-             * @deprecated This argument is ignored.
-             */
-            iconIndex?: number | undefined;
-            /**
-             * Optional.
-             * Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals scale, then image with size scale * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'19': foo}'
-             */
-            imageData?: ImageData | { [index: number]: ImageData } | undefined;
-            /**
-             * Optional.
-             * Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals scale, then image with size scale * 19 will be selected. Initially only scales 1 and 2 will be supported. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.imageData = {'19': foo}'
-             */
-            path?: string | { [index: string]: string } | undefined;
-        }
+        export type IconDetails =
+            & {
+                /** @deprecated This argument is ignored. */
+                iconIndex?: number | undefined;
+                /** The id of the tab for which you want to modify the page action. */
+                tabId: number;
+            }
+            & (
+                | {
+                    /** Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then image with size `scale` \* n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'16': foo}' */
+                    imageData: ImageData | { [index: number]: ImageData };
+                    /** Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then image with size `scale` \* n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.path = {'16': foo}' */
+                    path?: string | { [index: string]: string } | undefined;
+                }
+                | {
+                    /** Either an ImageData object or a dictionary {size -> ImageData} representing icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then image with size `scale` \* n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.imageData = foo' is equivalent to 'details.imageData = {'16': foo}' */
+                    imageData?: ImageData | { [index: number]: ImageData } | undefined;
+                    /** Either a relative image path or a dictionary {size -> relative image path} pointing to icon to be set. If the icon is specified as a dictionary, the actual image to be used is chosen depending on screen's pixel density. If the number of image pixels that fit into one screen space unit equals `scale`, then image with size `scale` \* n will be selected, where n is the size of the icon in the UI. At least one image must be specified. Note that 'details.path = foo' is equivalent to 'details.path = {'16': foo}' */
+                    path: string | { [index: string]: string };
+                }
+            );
+
+        /**
+         * Hides the page action. Hidden page actions still appear in the Chrome toolbar, but are grayed out.
+         * @param tabId The id of the tab for which you want to modify the page action.
+         * @param callback Since Chrome 67
+         */
+        export function hide(tabId: number, callback?: () => void): void;
 
         /**
          * Shows the page action. The page action is shown whenever the tab is selected.
          * @param tabId The id of the tab for which you want to modify the page action.
-         * @param callback Supported since Chrome 67
-         */
-        export function hide(tabId: number, callback?: () => void): void;
-        /**
-         * Shows the page action. The page action is shown whenever the tab is selected.
-         * @param tabId The id of the tab for which you want to modify the page action.
-         * @param callback Supported since Chrome 67
+         * @param callback Since Chrome 67
          */
         export function show(tabId: number, callback?: () => void): void;
+
         /**
          * Sets the title of the page action. This is displayed in a tooltip over the page action.
-         * @param callback Supported since Chrome 67
+         * @param callback Since Chrome 67
          */
         export function setTitle(details: TitleDetails, callback?: () => void): void;
+
         /**
-         * Sets the html document to be opened as a popup when the user clicks on the page action's icon.
-         * @param callback Supported since Chrome 67
+         * Sets the HTML document to be opened as a popup when the user clicks on the page action's icon.
+         * @param callback Since Chrome 67
          */
         export function setPopup(details: PopupDetails, callback?: () => void): void;
-        /**
-         * Gets the title of the page action.
-         * @since Chrome 19
-         */
-        export function getTitle(details: GetDetails, callback: (result: string) => void): void;
-        /**
-         * Gets the html document set as the popup for this page action.
-         * @since Chrome 19
-         */
-        export function getPopup(details: GetDetails, callback: (result: string) => void): void;
-        /**
-         * Sets the icon for the page action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element, or as dictionary of either one of those. Either the path or the imageData property must be specified.
-         */
+
+        /** Gets the title of the page action. */
+        export function getTitle(details: TabDetails, callback: (result: string) => void): void;
+
+        /** Gets the html document set as the popup for this page action. */
+        export function getPopup(details: TabDetails, callback: (result: string) => void): void;
+
+        /** Sets the icon for the page action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element, or as dictionary of either one of those. Either the path or the imageData property must be specified. */
         export function setIcon(details: IconDetails, callback?: () => void): void;
 
         /** Fired when a page action icon is clicked. This event will not fire if the page action has a popup. */
-        export var onClicked: PageActionClickedEvent;
+        export const onClicked: events.Event<(tab: chrome.tabs.Tab) => void>;
     }
 
     ////////////////////
@@ -7667,7 +7794,7 @@ declare namespace chrome {
             /** The list of host permissions, including those specified in the `optional_permissions` or `permissions` keys in the manifest, and those associated with [Content Scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts). */
             origins?: string[];
             /** List of named permissions (does not include hosts or origins). */
-            permissions?: chrome.runtime.ManifestPermissions[];
+            permissions?: chrome.runtime.ManifestPermission[];
         }
 
         export interface AddHostAccessRequest {
@@ -8973,7 +9100,7 @@ declare namespace chrome {
         }
 
         /** Source: https://developer.chrome.com/docs/extensions/reference/permissions-list */
-        export type ManifestPermissions =
+        export type ManifestPermission =
             | "accessibilityFeatures.modify"
             | "accessibilityFeatures.read"
             | "activeTab"
@@ -9057,9 +9184,14 @@ declare namespace chrome {
             | "webRequestBlocking"
             | "webRequestAuthProvider";
 
+        /**
+         * @deprecated Use `ManifestPermission` instead.
+         */
+        export type ManifestPermissions = ManifestPermission;
+
         /** Source : https://developer.chrome.com/docs/extensions/reference/api/permissions */
-        export type ManifestOptionalPermissions = Exclude<
-            ManifestPermissions,
+        export type ManifestOptionalPermission = Exclude<
+            ManifestPermission,
             | "debugger"
             | "declarativeNetRequest"
             | "devtools"
@@ -9073,6 +9205,11 @@ declare namespace chrome {
             | "wallpaper"
             | "webAuthenticationProxy"
         >;
+
+        /**
+         * @deprecated Use `ManifestOptionalPermission` instead.
+         */
+        export type ManifestOptionalPermissions = ManifestOptionalPermission;
 
         export interface SearchProvider {
             name?: string | undefined;
@@ -9293,8 +9430,8 @@ declare namespace chrome {
                 }
                 | undefined;
             content_security_policy?: string | undefined;
-            optional_permissions?: ManifestOptionalPermissions[] | string[] | undefined;
-            permissions?: ManifestPermissions[] | string[] | undefined;
+            optional_permissions?: (ManifestOptionalPermission | string)[] | undefined;
+            permissions?: (ManifestPermission | string)[] | undefined;
             web_accessible_resources?: string[] | undefined;
         }
 
@@ -9329,9 +9466,9 @@ declare namespace chrome {
                 sandbox?: string;
             };
             host_permissions?: string[] | undefined;
-            optional_permissions?: ManifestOptionalPermissions[] | undefined;
+            optional_permissions?: ManifestOptionalPermission[] | undefined;
             optional_host_permissions?: string[] | undefined;
-            permissions?: ManifestPermissions[] | undefined;
+            permissions?: ManifestPermission[] | undefined;
             web_accessible_resources?:
                 | Array<
                     & {
@@ -9906,209 +10043,153 @@ declare namespace chrome {
         export interface StorageArea {
             /**
              * Gets the amount of space (in bytes) being used by one or more items.
-             * @param keys Optional. A single key or list of keys to get the total usage for. An empty list will return 0. Pass in null to get the total usage of all of storage.
-             * @return A Promise that resolves with a number
-             * @since MV3
+             * @param keys A single key or list of keys to get the total usage for. An empty list will return 0. Pass in `null` to get the total usage of all of storage.
+             *
+             * Can return its result via Promise in Manifest V3 or later since Chrome 95.
              */
             getBytesInUse<T = { [key: string]: any }>(keys?: keyof T | Array<keyof T> | null): Promise<number>;
-            /**
-             * Gets the amount of space (in bytes) being used by one or more items.
-             * @param keys Optional. A single key or list of keys to get the total usage for. An empty list will return 0. Pass in null to get the total usage of all of storage.
-             * @param callback Callback with the amount of space being used by storage, or on failure (in which case runtime.lastError will be set).
-             * Parameter bytesInUse: Amount of space being used in storage, in bytes.
-             */
+            getBytesInUse<T = { [key: string]: any }>(callback: (bytesInUse: number) => void): void;
             getBytesInUse<T = { [key: string]: any }>(
-                keys: keyof T | Array<keyof T> | null,
+                keys: keyof T | Array<keyof T> | null | undefined,
                 callback: (bytesInUse: number) => void,
             ): void;
-            /**
-             * Gets the amount of space (in bytes) being used by one or more items.
-             * @param callback Callback with the amount of space being used by storage, or on failure (in which case runtime.lastError will be set).
-             * Parameter bytesInUse: Amount of space being used in storage, in bytes.
-             */
-            getBytesInUse(callback: (bytesInUse: number) => void): void;
+
             /**
              * Removes all items from storage.
-             * @return A void Promise
-             * @since MV3
+             *
+             * Can return its result via Promise in Manifest V3 or later since Chrome 95.
              */
             clear(): Promise<void>;
-            /**
-             * Removes all items from storage.
-             * @param callback Optional.
-             * Callback on success, or on failure (in which case runtime.lastError will be set).
-             */
             clear(callback: () => void): void;
+
             /**
              * Sets multiple items.
-             * @param items An object which gives each key/value pair to update storage with. Any other key/value pairs in storage will not be affected.
-             * Primitive values such as numbers will serialize as expected. Values with a typeof "object" and "function" will typically serialize to {}, with the exception of Array (serializes as expected), Date, and Regex (serialize using their String representation).
-             * @return A void Promise
-             * @since MV3
+             * @param items An object which gives each key/value pair to update storage with. Any other key/value pairs in storage will not be affected. Primitive values such as numbers will serialize as expected. Values with a `typeof` `object` and `function` will typically serialize to `{}`, with the exception of `Array` (serializes as expected), `Date`, and `Regex` (serialize using their `String` representation).
+             *
+             * Can return its result via Promise in Manifest V3 or later since Chrome 95.
              */
             set<T = { [key: string]: any }>(items: Partial<T>): Promise<void>;
-            /**
-             * Sets multiple items.
-             * @param items An object which gives each key/value pair to update storage with. Any other key/value pairs in storage will not be affected.
-             * Primitive values such as numbers will serialize as expected. Values with a typeof "object" and "function" will typically serialize to {}, with the exception of Array (serializes as expected), Date, and Regex (serialize using their String representation).
-             * @param callback Optional.
-             * Callback on success, or on failure (in which case runtime.lastError will be set).
-             */
             set<T = { [key: string]: any }>(items: Partial<T>, callback: () => void): void;
+
             /**
              * Removes one or more items from storage.
              * @param keys A single key or a list of keys for items to remove.
-             * @param callback Optional.
-             * @return A void Promise
-             * @since MV3
+             *
+             * Can return its result via Promise in Manifest V3 or later since Chrome 95.
              */
             remove<T = { [key: string]: any }>(keys: keyof T | Array<keyof T>): Promise<void>;
-            /**
-             * Removes one or more items from storage.
-             * @param keys A single key or a list of keys for items to remove.
-             * @param callback Optional.
-             * Callback on success, or on failure (in which case runtime.lastError will be set).
-             */
             remove<T = { [key: string]: any }>(keys: keyof T | Array<keyof T>, callback: () => void): void;
+
             /**
              * Gets one or more items from storage.
-             * @param keys A single key to get, list of keys to get, or a dictionary specifying default values.
-             * An empty list or object will return an empty result object. Pass in null to get the entire contents of storage.
-             * @return A Promise that resolves with an object containing items
-             * @since MV3
+             * @param keys A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object). An empty list or object will return an empty result object. Pass in `null` to get the entire contents of storage.
+             *
+             * Can return its result via Promise in Manifest V3 or later since Chrome 95.
              */
-            get<T = { [key: string]: any }>(
+            get<T = { [key: string]: unknown }>(
                 keys?: NoInferX<keyof T> | Array<NoInferX<keyof T>> | Partial<NoInferX<T>> | null,
             ): Promise<T>;
-            /**
-             * Gets one or more items from storage.
-             * @param keys A single key to get, list of keys to get, or a dictionary specifying default values.
-             * An empty list or object will return an empty result object. Pass in null to get the entire contents of storage.
-             * @param callback Callback with storage items, or on failure (in which case runtime.lastError will be set).
-             * Parameter items: Object with items in their key-value mappings.
-             */
-            get<T = { [key: string]: any }>(
-                keys: NoInferX<keyof T> | Array<NoInferX<keyof T>> | Partial<NoInferX<T>> | null,
+            get<T = { [key: string]: unknown }>(callback: (items: T) => void): void;
+            get<T = { [key: string]: unknown }>(
+                keys: NoInferX<keyof T> | Array<NoInferX<keyof T>> | Partial<NoInferX<T>> | null | undefined,
                 callback: (items: T) => void,
             ): void;
+
             /**
-             * Gets the entire contents of storage.
-             * @param callback Callback with storage items, or on failure (in which case runtime.lastError will be set).
-             * Parameter items: Object with items in their key-value mappings.
-             */
-            get<T = { [key: string]: any }>(callback: (items: T) => void): void;
-            /**
-             * Sets the desired access level for the storage area. By default, session storage is restricted to trusted contexts (extension pages and service workers), while managed, local, and sync storage allow access from both trusted and untrusted contexts.
-             * @param accessOptions An object containing an accessLevel key which contains the access level of the storage area.
-             * @return A void Promise.
+             * Sets the desired access level for the storage area. By default, session storage is restricted to trusted contexts (extension pages and service workers), while `managed`, `local`, and `sync` storage allow access from both trusted and untrusted contexts.
+             * @param accessOptions The access level of the storage area.
+             *
+             * Can return its result via Promise in Manifest V3 or later.
              * @since Chrome 102
              */
-            setAccessLevel(accessOptions: { accessLevel: AccessLevel }): Promise<void>;
-            /**
-             * Sets the desired access level for the storage area. By default, session storage is restricted to trusted contexts (extension pages and service workers), while managed, local, and sync storage allow access from both trusted and untrusted contexts.
-             * @param accessOptions An object containing an accessLevel key which contains the access level of the storage area.
-             * @param callback Optional.
-             * @since Chrome 102
-             */
-            setAccessLevel(accessOptions: { accessLevel: AccessLevel }, callback: () => void): void;
-            /**
-             * Fired when one or more items change within this storage area.
-             * @param keys A single key to get, list of keys to get, or a dictionary specifying default values.
-             * An empty list or object will return an empty result object. Pass in null to get the entire contents of storage.
-             * @param callback Callback with storage items, or on failure (in which case runtime.lastError will be set).
-             * Parameter items: Object with items in their key-value mappings.
-             */
-            onChanged: StorageAreaChangedEvent;
+            setAccessLevel(accessOptions: { accessLevel: `${AccessLevel}` }): Promise<void>;
+            setAccessLevel(accessOptions: { accessLevel: `${AccessLevel}` }, callback: () => void): void;
+
+            /** Fired when one or more items change. */
+            onChanged: events.Event<(changes: { [key: string]: StorageChange }) => void>;
+
             /**
              * Gets all keys from storage.
-             * @return A Promise that resolves with an array of keys.
+             *
+             * Can return its result via Promise in Manifest V3 or later.
              * @since Chrome 130
              */
             getKeys(): Promise<string[]>;
-            /**
-             * Gets all keys from storage.
-             * @param callback Callback with storage keys.
-             * Parameter keys: Array of keys in storage.
-             * @since Chrome 130
-             */
             getKeys(callback: (keys: string[]) => void): void;
         }
 
         export interface StorageChange {
-            /** Optional. The new value of the item, if there is a new value. */
-            newValue?: any;
-            /** Optional. The old value of the item, if there was an old value. */
-            oldValue?: any;
+            /** The new value of the item, if there is a new value. */
+            newValue?: unknown;
+            /** The old value of the item, if there was an old value. */
+            oldValue?: unknown;
         }
 
         export interface LocalStorageArea extends StorageArea {
-            /** The maximum amount (in bytes) of data that can be stored in local storage, as measured by the JSON stringification of every value plus every key's length. This value will be ignored if the extension has the unlimitedStorage permission. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError. */
-            QUOTA_BYTES: number;
+            /** The maximum amount (in bytes) of data that can be stored in local storage, as measured by the JSON stringification of every value plus every key's length. This value will be ignored if the extension has the unlimitedStorage permission. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError when using a callback, or a rejected Promise if using async/await. */
+            QUOTA_BYTES: 10485760;
         }
 
         export interface SyncStorageArea extends StorageArea {
-            /** @deprecated since Chrome 40. The storage.sync API no longer has a sustained write operation quota. */
-            MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE: number;
-            /** The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError. */
-            QUOTA_BYTES: number;
-            /** The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set runtime.lastError. */
-            QUOTA_BYTES_PER_ITEM: number;
-            /** The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set runtime.lastError. */
-            MAX_ITEMS: number;
+            /** @deprecated The storage.sync API no longer has a sustained write operation quota. */
+            MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE: 1000000;
+            /** The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected. */
+            QUOTA_BYTES: 102400;
+            /** The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected. */
+            QUOTA_BYTES_PER_ITEM: 8192;
+            /** The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected. */
+            MAX_ITEMS: 512;
             /**
-             * The maximum number of set, remove, or clear operations that can be performed each hour. This is 1 every 2 seconds, a lower ceiling than the short term higher writes-per-minute limit.
-             * Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError.
+             * The maximum number of `set`, `remove`, or `clear` operations that can be performed each hour. This is 1 every 2 seconds, a lower ceiling than the short term higher writes-per-minute limit.
+             *
+             * Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected.
              */
-            MAX_WRITE_OPERATIONS_PER_HOUR: number;
+            MAX_WRITE_OPERATIONS_PER_HOUR: 1800;
             /**
-             * The maximum number of set, remove, or clear operations that can be performed each minute. This is 2 per second, providing higher throughput than writes-per-hour over a shorter period of time.
-             * Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError.
-             * @since Chrome 40
+             * The maximum number of `set`, `remove`, or `clear` operations that can be performed each minute. This is 2 per second, providing higher throughput than writes-per-hour over a shorter period of time.
+             *
+             * Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected.
              */
-            MAX_WRITE_OPERATIONS_PER_MINUTE: number;
+            MAX_WRITE_OPERATIONS_PER_MINUTE: 120;
         }
 
         export interface SessionStorageArea extends StorageArea {
-            /** The maximum amount (in bytes) of data that can be stored in memory, as measured by estimating the dynamically allocated memory usage of every value and key. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError. */
-            QUOTA_BYTES: number;
+            /** The maximum amount (in bytes) of data that can be stored in memory, as measured by estimating the dynamically allocated memory usage of every value and key. Updates that would cause this limit to be exceeded fail immediately and set runtime.lastError when using a callback, or when a Promise is rejected. */
+            QUOTA_BYTES: 10485760;
         }
 
-        export interface StorageAreaChangedEvent
-            extends chrome.events.Event<(changes: { [key: string]: StorageChange }) => void>
-        {}
-
-        export type AreaName = keyof Pick<typeof chrome.storage, "sync" | "local" | "managed" | "session">;
-        export interface StorageChangedEvent
-            extends chrome.events.Event<(changes: { [key: string]: StorageChange }, areaName: AreaName) => void>
-        {}
-
-        export type AccessLevel = keyof typeof AccessLevel;
-
-        /** The storage area's access level. */
-        export var AccessLevel: {
-            TRUSTED_AND_UNTRUSTED_CONTEXTS: "TRUSTED_AND_UNTRUSTED_CONTEXTS";
-            TRUSTED_CONTEXTS: "TRUSTED_CONTEXTS";
-        };
-
-        /** Items in the local storage area are local to each machine. */
-        export var local: LocalStorageArea;
-        /** Items in the sync storage area are synced using Chrome Sync. */
-        export var sync: SyncStorageArea;
+        export type AreaName = "sync" | "local" | "managed" | "session";
 
         /**
-         * Items in the managed storage area are set by the domain administrator, and are read-only for the extension; trying to modify this namespace results in an error.
-         * @since Chrome 33
-         */
-        export var managed: StorageArea;
-
-        /**
-         * Items in the session storage area are stored in-memory and will not be persisted to disk.
+         * The storage area's access level.
          * @since Chrome 102
          */
-        export var session: SessionStorageArea;
+        export enum AccessLevel {
+            /** Specifies contexts originating from the extension itself. */
+            TRUSTED_CONTEXTS = "TRUSTED_CONTEXTS",
+            /** Specifies contexts originating from outside the extension. */
+            TRUSTED_AND_UNTRUSTED_CONTEXTS = "TRUSTED_AND_UNTRUSTED_CONTEXTS",
+        }
+
+        /** Items in the `local` storage area are local to each machine. */
+        export const local: LocalStorageArea;
+
+        /** Items in the `sync` storage area are synced using Chrome Sync. */
+        export const sync: SyncStorageArea;
+
+        /** Items in the `managed` storage area are set by an enterprise policy configured by the domain administrator, and are read-only for the extension; trying to modify this namespace results in an error. For information on configuring a policy, see Manifest for storage areas. */
+        export const managed: StorageArea;
+
+        /**
+         * Items in the `session` storage area are stored in-memory and will not be persisted to disk.
+         *
+         * MV3 only
+         * @since Chrome 102
+         */
+        export const session: SessionStorageArea;
 
         /** Fired when one or more items change. */
-        export var onChanged: StorageChangedEvent;
+        export const onChanged: events.Event<(changes: { [key: string]: StorageChange }, areaName: AreaName) => void>;
     }
 
     ////////////////////
@@ -10132,6 +10213,7 @@ declare namespace chrome {
         }
 
         /** @deprecated Use {@link CpuTime} instead. */
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
         interface ProcessorUsage extends CpuTime {}
 
         export interface ProcessorInfo {
@@ -11869,7 +11951,7 @@ declare namespace chrome {
      * Permissions: "topSites"
      */
     export namespace topSites {
-        /** An object encapsulating a most visited URL, such as the URLs on the new tab page. */
+        /** An object encapsulating a most visited URL, such as the default shortcuts on the new tab page. */
         export interface MostVisitedURL {
             /** The most visited URL. */
             url: string;
@@ -11877,14 +11959,13 @@ declare namespace chrome {
             title: string;
         }
 
-        /** Gets a list of top sites. */
-        export function get(callback: (data: MostVisitedURL[]) => void): void;
-
         /**
          * Gets a list of top sites.
-         * @return The `get` method provides its result via callback or returned as a `Promise` (MV3 only).
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
         export function get(): Promise<MostVisitedURL[]>;
+        export function get(callback: (data: MostVisitedURL[]) => void): void;
     }
 
     ////////////////////
@@ -12247,16 +12328,16 @@ declare namespace chrome {
              */
             value: T;
             /** Where to set the setting (default: regular). */
-            scope?: ChromeSettingScope;
+            scope?: ChromeSettingScope | undefined;
         }
 
         /** Which setting to consider. */
         export interface ChromeSettingGetDetails {
             /** Whether to return the value that applies to the incognito session (default false). */
-            incognito?: boolean;
+            incognito?: boolean | undefined;
         }
 
-        /** Details of the currently effective value */
+        /** Details of the currently effective value. */
         export interface ChromeSettingGetResult<T> {
             /** The level of control of the setting. */
             levelOfControl: LevelOfControl;
@@ -12264,7 +12345,7 @@ declare namespace chrome {
             value: T;
             /**
              * Whether the effective value is specific to the incognito session.
-             * This property will only be present if the incognito property in the details parameter of get() was true.
+             * This property will only be present if the `incognito` property in the `details` parameter of `get()` was true.
              */
             incognitoSpecific?: boolean;
         }
@@ -12272,17 +12353,14 @@ declare namespace chrome {
         /** Which setting to clear. */
         export interface ChromeSettingClearDetails {
             /** Where to clear the setting (default: regular). */
-            scope?: ChromeSettingScope;
+            scope?: ChromeSettingScope | undefined;
         }
 
         /** Details of the currently effective value. */
         export interface ChromeSettingOnChangeDetails<T> {
-            /**
-             * Whether the effective value is specific to the incognito session. T
-             * his property will only be present if the incognito property in the details parameter of get() was true.
-             */
+            /** Whether the value that has changed is specific to the incognito session. This property will only be present if the user has enabled the extension in incognito mode. */
             incognitoSpecific?: boolean;
-            /** The value of the setting. */
+            /** The value of the setting after the change. */
             value: T;
             /** The level of control of the setting. */
             levelOfControl: LevelOfControl;
@@ -12295,27 +12373,30 @@ declare namespace chrome {
         export interface ChromeSetting<T> {
             /**
              * Sets the value of a setting.
+             *
              * Can return its result via Promise in Manifest V3 or later since Chrome 96.
              */
-            set(details: ChromeSettingSetDetails<T>, callback: () => void): void;
             set(details: ChromeSettingSetDetails<T>): Promise<void>;
+            set(details: ChromeSettingSetDetails<T>, callback: () => void): void;
 
             /**
              * Gets the value of a setting.
+             *
              * Can return its result via Promise in Manifest V3 or later since Chrome 96.
              */
-            get(details: ChromeSettingGetDetails, callback: (details: ChromeSettingGetResult<T>) => void): void;
             get(details: ChromeSettingGetDetails): Promise<ChromeSettingGetResult<T>>;
+            get(details: ChromeSettingGetDetails, callback: (details: ChromeSettingGetResult<T>) => void): void;
 
             /**
              * Clears the setting, restoring any default value.
+             *
              * Can return its result via Promise in Manifest V3 or later since Chrome 96.
              */
-            clear(details: ChromeSettingClearDetails, callback: () => void): void;
             clear(details: ChromeSettingClearDetails): Promise<void>;
+            clear(details: ChromeSettingClearDetails, callback: () => void): void;
 
             /** Fired after the setting changes. */
-            onChange: chrome.events.Event<(details: ChromeSettingOnChangeDetails<T>) => void>;
+            onChange: events.Event<(details: ChromeSettingOnChangeDetails<T>) => void>;
         }
     }
 
@@ -12330,85 +12411,135 @@ declare namespace chrome {
      * @since Chrome 43
      */
     export namespace vpnProvider {
-        export interface VpnSessionParameters {
+        export interface Parameters {
             /** IP address for the VPN interface in CIDR notation. IPv4 is currently the only supported mode. */
             address: string;
-            /** Optional. Broadcast address for the VPN interface. (default: deduced from IP address and mask) */
+            /** Broadcast address for the VPN interface. (default: deduced from IP address and mask) */
             broadcastAddress?: string | undefined;
-            /** Optional. MTU setting for the VPN interface. (default: 1500 bytes) */
+            /** MTU setting for the VPN interface. (default: 1500 bytes) */
             mtu?: string | undefined;
-            /**
-             * Exclude network traffic to the list of IP blocks in CIDR notation from the tunnel. This can be used to bypass traffic to and from the VPN server. When many rules match a destination, the rule with the longest matching prefix wins. Entries that correspond to the same CIDR block are treated as duplicates. Such duplicates in the collated (exclusionList + inclusionList) list are eliminated and the exact duplicate entry that will be eliminated is undefined.
-             */
+            /** Exclude network traffic to the list of IP blocks in CIDR notation from the tunnel. This can be used to bypass traffic to and from the VPN server. When many rules match a destination, the rule with the longest matching prefix wins. Entries that correspond to the same CIDR block are treated as duplicates. Such duplicates in the collated (exclusionList + inclusionList) list are eliminated and the exact duplicate entry that will be eliminated is undefined. */
             exclusionList: string[];
-            /**
-             * Include network traffic to the list of IP blocks in CIDR notation to the tunnel. This parameter can be used to set up a split tunnel. By default no traffic is directed to the tunnel. Adding the entry "0.0.0.0/0" to this list gets all the user traffic redirected to the tunnel. When many rules match a destination, the rule with the longest matching prefix wins. Entries that correspond to the same CIDR block are treated as duplicates. Such duplicates in the collated (exclusionList + inclusionList) list are eliminated and the exact duplicate entry that will be eliminated is undefined.
-             */
+            /** Include network traffic to the list of IP blocks in CIDR notation to the tunnel. This parameter can be used to set up a split tunnel. By default no traffic is directed to the tunnel. Adding the entry "0.0.0.0/0" to this list gets all the user traffic redirected to the tunnel. When many rules match a destination, the rule with the longest matching prefix wins. Entries that correspond to the same CIDR block are treated as duplicates. Such duplicates in the collated (exclusionList + inclusionList) list are eliminated and the exact duplicate entry that will be eliminated is undefined. */
             inclusionList: string[];
-            /** Optional. A list of search domains. (default: no search domain) */
+            /** A list of search domains. (default: no search domain) */
             domainSearch?: string[] | undefined;
             /** A list of IPs for the DNS servers. */
-            dnsServer: string[];
+            dnsServers: string[];
+            /**
+             * Whether or not the VPN extension implements auto-reconnection.
+             *
+             * If true, the `linkDown`, `linkUp`, `linkChanged`, `suspend`, and `resume` platform messages will be used to signal the respective events. If false, the system will forcibly disconnect the VPN if the network topology changes, and the user will need to reconnect manually. (default: false)
+             *
+             * This property is new in Chrome 51; it will generate an exception in earlier versions. try/catch can be used to conditionally enable the feature based on browser support.
+             * @since Chrome 51
+             */
+            reconnect?: string | undefined;
         }
 
-        export interface VpnPlatformMessageEvent
-            extends chrome.events.Event<(id: string, message: string, error: string) => void>
-        {}
+        /** @deprecated Use {@link Parameters} instead */
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+        interface VpnSessionParameters extends Parameters {}
 
-        export interface VpnPacketReceptionEvent extends chrome.events.Event<(data: ArrayBuffer) => void> {}
+        /** The enum is used by the platform to notify the client of the VPN session status. */
+        export enum PlatformMessage {
+            /** Indicates that the VPN configuration connected. */
+            CONNECTED = "connected",
+            /** Indicates that the VPN configuration disconnected. */
+            DISCONNECTED = "disconnected",
+            /** Indicates that an error occurred in VPN connection, for example a timeout. A description of the error is given as the error argument to onPlatformMessage. */
+            ERROR = "error",
+            /** Indicates that the default physical network connection is down. */
+            LINK_DOWN = "linkDown",
+            /** Indicates that the default physical network connection is back up. */
+            LINK_UP = "linkUp",
+            /** Indicates that the default physical network connection changed, e.g. wifi->mobile. */
+            LINK_CHANGED = "linkChanged",
+            /** Indicates that the OS is preparing to suspend, so the VPN should drop its connection. The extension is not guaranteed to receive this event prior to suspending. */
+            SUSPEND = "suspend",
+            /** Indicates that the OS has resumed and the user has logged back in, so the VPN should try to reconnect. */
+            RESUME = "resume",
+        }
 
-        export interface VpnConfigRemovalEvent extends chrome.events.Event<(id: string) => void> {}
+        /** The enum is used by the platform to indicate the event that triggered {@link onUIEvent}. */
+        export enum UIEvent {
+            /** Requests that the VPN client show the add configuration dialog box to the user. */
+            SHOW_ADD_DIALOG = "showAddDialog",
+            /** Requests that the VPN client show the configuration settings dialog box to the user. */
+            SHOW_CONFIGURE_DIALOG = "showConfigureDialog",
+        }
 
-        export interface VpnConfigCreationEvent
-            extends chrome.events.Event<(id: string, name: string, data: { [key: string]: unknown }) => void>
-        {}
-
-        export interface VpnUiEvent extends chrome.events.Event<(event: string, id?: string) => void> {}
+        /** The enum is used by the VPN client to inform the platform of its current state. This helps provide meaningful messages to the user. */
+        export enum VpnConnectionState {
+            /** Specifies that VPN connection was successful. */
+            CONNECTED = "connected",
+            /** Specifies that VPN connection has failed. */
+            FAILURE = "failure",
+        }
 
         /**
          * Creates a new VPN configuration that persists across multiple login sessions of the user.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param name The name of the VPN configuration.
-         * @param callback Called when the configuration is created or if there is an error.
-         * Parameter id: A unique ID for the created configuration, empty string on failure.
          */
+        export function createConfig(name: string): Promise<string>;
         export function createConfig(name: string, callback: (id: string) => void): void;
+
         /**
          * Destroys a VPN configuration created by the extension.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param id ID of the VPN configuration to destroy.
-         * @param callback Optional. Called when the configuration is destroyed or if there is an error.
          */
-        export function destroyConfig(id: string, callback?: () => void): void;
+        export function destroyConfig(id: string): Promise<void>;
+        export function destroyConfig(id: string, callback: () => void): void;
+
         /**
-         * Sets the parameters for the VPN session. This should be called immediately after "connected" is received from the platform. This will succeed only when the VPN session is owned by the extension.
+         * Sets the parameters for the VPN session. This should be called immediately after `"connected"` is received from the platform. This will succeed only when the VPN session is owned by the extension.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param parameters The parameters for the VPN session.
-         * @param callback Called when the parameters are set or if there is an error.
          */
-        export function setParameters(parameters: VpnSessionParameters, callback?: () => void): void;
+        export function setParameters(parameters: Parameters): Promise<void>;
+        export function setParameters(parameters: Parameters, callback: () => void): void;
+
         /**
          * Sends an IP packet through the tunnel created for the VPN session. This will succeed only when the VPN session is owned by the extension.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param data The IP packet to be sent to the platform.
-         * @param callback Optional. Called when the packet is sent or if there is an error.
          */
-        export function sendPacket(data: ArrayBuffer, callback?: () => void): void;
+        export function sendPacket(data: ArrayBuffer): Promise<void>;
+        export function sendPacket(data: ArrayBuffer, callback: () => void): void;
+
         /**
          * Notifies the VPN session state to the platform. This will succeed only when the VPN session is owned by the extension.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          * @param state The VPN session state of the VPN client.
-         * connected: VPN connection was successful.
-         * failure: VPN connection failed.
-         * @param callback Optional. Called when the notification is complete or if there is an error.
          */
-        export function notifyConnectionStateChanged(state: string, callback?: () => void): void;
+        export function notifyConnectionStateChanged(state: `${VpnConnectionState}`): Promise<void>;
+        export function notifyConnectionStateChanged(state: `${VpnConnectionState}`, callback: () => void): void;
 
         /** Triggered when a message is received from the platform for a VPN configuration owned by the extension. */
-        export var onPlatformMessage: VpnPlatformMessageEvent;
+        export const onPlatformMessage: events.Event<
+            (id: string, message: `${PlatformMessage}`, error: string) => void
+        >;
+
         /** Triggered when an IP packet is received via the tunnel for the VPN session owned by the extension. */
-        export var onPacketReceived: VpnPacketReceptionEvent;
+        export const onPacketReceived: events.Event<(data: ArrayBuffer) => void>;
+
         /** Triggered when a configuration created by the extension is removed by the platform. */
-        export var onConfigRemoved: VpnConfigRemovalEvent;
-        /** Triggered when a configuration is created by the platform for the extension. */
-        export var onConfigCreated: VpnConfigCreationEvent;
+        export const onConfigRemoved: events.Event<(id: string) => void>;
+
+        // /** Triggered when a configuration is created by the platform for the extension. */
+        export const onConfigCreated: events.Event<
+            (id: string, name: string, data: { [key: string]: unknown }) => void
+        >;
+
         /** Triggered when there is a UI event for the extension. UI events are signals from the platform that indicate to the app that a UI dialog needs to be shown to the user. */
-        export var onUIEvent: VpnUiEvent;
+        export const onUIEvent: events.Event<(event: `${UIEvent}`, id?: string) => void>;
     }
 
     ////////////////////
@@ -12422,27 +12553,35 @@ declare namespace chrome {
      * @since Chrome 43
      */
     export namespace wallpaper {
+        /**
+         * The supported wallpaper layouts.
+         * @since Chrome 44
+         */
+        export enum WallpaperLayout {
+            STRETCH = "STRETCH",
+            CENTER = "CENTER",
+            CENTER_CROPPED = "CENTER_CROPPED",
+        }
+
         export interface WallpaperDetails {
-            /** Optional. The jpeg or png encoded wallpaper image. */
+            /** The jpeg or png encoded wallpaper image as an ArrayBuffer. */
             data?: ArrayBuffer | undefined;
-            /** Optional. The URL of the wallpaper to be set. */
+            /** The URL of the wallpaper to be set (can be relative). */
             url?: string | undefined;
-            /**
-             * The supported wallpaper layouts.
-             * One of: "STRETCH", "CENTER", or "CENTER_CROPPED"
-             */
-            layout: "STRETCH" | "CENTER" | "CENTER_CROPPED";
+            /** The supported wallpaper layouts. */
+            layout: `${WallpaperLayout}`;
             /** The file name of the saved wallpaper. */
             filename: string;
-            /** Optional. True if a 128x60 thumbnail should be generated. */
+            /** True if a 128x60 thumbnail should be generated. Layout and ratio are not supported yet. */
             thumbnail?: boolean | undefined;
         }
 
         /**
          * Sets wallpaper to the image at url or wallpaperData with the specified layout
-         * @param callback
-         * Optional parameter thumbnail: The jpeg encoded wallpaper thumbnail. It is generated by resizing the wallpaper to 128x60.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 96.
          */
+        export function setWallpaper(details: WallpaperDetails): Promise<ArrayBuffer | undefined>;
         export function setWallpaper(details: WallpaperDetails, callback: (thumbnail?: ArrayBuffer) => void): void;
     }
 
@@ -12572,33 +12711,84 @@ declare namespace chrome {
      * Permissions: "webNavigation"
      */
     export namespace webNavigation {
-        export interface GetFrameDetails {
-            /**
-             * The ID of the process runs the renderer for this tab.
-             * @since Chrome 22
-             * @deprecated since Chrome 49. Frames are now uniquely identified by their tab ID and frame ID; the process ID is no longer needed and therefore ignored.
-             */
-            processId?: number | undefined;
-            /** The ID of the tab in which the frame is. */
-            tabId: number;
-            /** The ID of the frame in the given tab. */
-            frameId: number;
+        /** @since Chrome 44 */
+        export enum TransitionQualifier {
+            CLIENT_REDIRECT = "client_redirect",
+            SERVER_REDIRECT = "server_redirect",
+            FORWARD_BACK = "forward_back",
+            FROM_ADDRESS_BAR = "from_address_bar",
         }
+
+        /**
+         * Cause of the navigation. The same transition types as defined in the history API are used. These are the same transition types as defined in the history API except with `"start_page"` in place of `"auto_toplevel"` (for backwards compatibility).
+         * @since Chrome 44
+         */
+        export enum TransitionType {
+            LINK = "link",
+            TYPED = "typed",
+            AUTO_BOOKMARK = "auto_bookmark",
+            AUTO_SUBFRAME = "auto_subframe",
+            MANUAL_SUBFRAME = "manual_subframe",
+            GENERATED = "generated",
+            START_PAGE = "start_page",
+            FORM_SUBMIT = "form_submit",
+            RELOAD = "reload",
+            KEYWORD = "keyword",
+            KEYWORD_GENERATED = "keyword_generated",
+        }
+
+        export type GetFrameDetails =
+            & ({
+                /**
+                 * The ID of the process that runs the renderer for this tab.
+                 * @deprecated since Chrome 49. Frames are now uniquely identified by their tab ID and frame ID; the process ID is no longer needed and therefore ignored.
+                 */
+                processId?: number | undefined;
+            })
+            & (
+                {
+                    /** The ID of the tab in which the frame is. */
+                    tabId?: number | undefined;
+                    /** The ID of the frame in the given tab. */
+                    frameId?: number | undefined;
+                    /**
+                     * The UUID of the document. If the frameId and/or tabId are provided they will be validated to match the document found by provided document ID.
+                     * @since Chrome 106
+                     */
+                    documentId: string;
+                } | {
+                    /** The ID of the tab in which the frame is. */
+                    tabId: number;
+                    /** The ID of the frame in the given tab. */
+                    frameId: number;
+                    /**
+                     * The UUID of the document. If the frameId and/or tabId are provided they will be validated to match the document found by provided document ID.
+                     * @since Chrome 106
+                     */
+                    documentId?: string | undefined;
+                }
+            );
 
         export interface GetFrameResultDetails {
             /** The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists. */
             url: string;
             /** A UUID of the document loaded. */
             documentId: string;
-            /** The lifecycle the document is in. */
+            /**
+             * The lifecycle the document is in.
+             * @since Chrome 106
+             */
             documentLifecycle: extensionTypes.DocumentLifecycle;
             /** True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired. */
             errorOccurred: boolean;
             /** The type of frame the navigation occurred in. */
             frameType: extensionTypes.FrameType;
-            /** A UUID of the parent document owning this frame. This is not set if there is no parent. */
+            /**
+             * A UUID of the parent document owning this frame. This is not set if there is no parent.
+             * @since Chrome 106
+             */
             parentDocumentId?: string | undefined;
-            /** ID of frame that wraps the frame. Set to -1 of no parent frame exists. */
+            /** The ID of the parent frame, or `-1` if this is the main frame. */
             parentFrameId: number;
         }
 
@@ -12607,83 +12797,86 @@ declare namespace chrome {
             tabId: number;
         }
 
+        /** A list of frames in the given tab, null if the specified tab ID is invalid. */
         export interface GetAllFrameResultDetails extends GetFrameResultDetails {
-            /** The ID of the process runs the renderer for this tab. */
+            /** The ID of the process that runs the renderer for this frame. */
             processId: number;
             /** The ID of the frame. 0 indicates that this is the main frame; a positive value indicates the ID of a subframe. */
             frameId: number;
         }
 
-        export interface WebNavigationCallbackDetails {
-            /** The ID of the tab in which the navigation is about to occur. */
+        export interface WebNavigationReplacementCallbackDetails {
+            /** The ID of the tab that was replaced. */
+            replacedTabId: number;
+            /** The ID of the tab that replaced the old tab. */
             tabId: number;
-            /** The time when the browser was about to start the navigation, in milliseconds since the epoch. */
+            /** The time when the replacement happened, in milliseconds since the epoch. */
             timeStamp: number;
         }
 
-        export interface WebNavigationUrlCallbackDetails extends WebNavigationCallbackDetails {
-            url: string;
-        }
-
-        export interface WebNavigationReplacementCallbackDetails extends WebNavigationCallbackDetails {
-            /** The ID of the tab that was replaced. */
-            replacedTabId: number;
-        }
-
-        export interface WebNavigationFramedCallbackDetails extends WebNavigationUrlCallbackDetails {
-            /** 0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique for a given tab and process. */
+        export interface WebNavigationBaseCallbackDetails {
+            /** The lifecycle the document is in. */
+            documentLifecycle: extensionTypes.DocumentLifecycle;
+            /** 0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab. */
             frameId: number;
             /** The type of frame the navigation occurred in. */
             frameType: extensionTypes.FrameType;
-            /** A UUID of the document loaded. (This is not set for onBeforeNavigate callbacks.) */
-            documentId?: string | undefined;
-            /** The lifecycle the document is in. */
-            documentLifecycle: extensionTypes.DocumentLifecycle;
             /** A UUID of the parent document owning this frame. This is not set if there is no parent. */
-            parentDocumentId?: string | undefined;
-            /**
-             * The ID of the process runs the renderer for this tab.
-             * @since Chrome 22
-             */
+            parentDocumentId?: string;
+            /** The ID of the parent frame, or `-1` if this is the main frame. */
+            parentFrameId: number;
+            /** The ID of the process that runs the renderer for this frame. */
             processId: number;
+            /** The ID of the tab in which the navigation occurs. */
+            tabId: number;
+            /** The time when the browser was about to start the navigation, in milliseconds since the epoch */
+            timeStamp: number;
+            url: string;
         }
 
-        export interface WebNavigationFramedErrorCallbackDetails extends WebNavigationFramedCallbackDetails {
+        export interface WebNavigationFramedCallbackDetails extends WebNavigationBaseCallbackDetails {
+            /**
+             * A UUID of the document loaded.
+             * @since Chrome 106
+             */
+            documentId: string;
+        }
+
+        export interface WebNavigationFramedErrorCallbackDetails extends WebNavigationBaseCallbackDetails {
+            /**
+             * A UUID of the document loaded.
+             * @since Chrome 106
+             */
+            documentId: string;
             /** The error description. */
             error: string;
         }
 
-        export interface WebNavigationSourceCallbackDetails extends WebNavigationUrlCallbackDetails {
-            /** The ID of the tab in which the navigation is triggered. */
-            sourceTabId: number;
-            /**
-             * The ID of the process runs the renderer for the source tab.
-             * @since Chrome 22
-             */
-            sourceProcessId: number;
+        export interface WebNavigationSourceCallbackDetails {
             /** The ID of the frame with sourceTabId in which the navigation is triggered. 0 indicates the main frame. */
             sourceFrameId: number;
+            /** The ID of the process that runs the renderer for the source frame. */
+            sourceProcessId: number;
+            /** The ID of the tab in which the navigation is triggered. */
+            sourceTabId: number;
+            /** The ID of the tab in which the url is opened */
+            tabId: number;
+            /** The time when the browser was about to create a new view, in milliseconds since the epoch. */
+            timeStamp: number;
+            /** The URL to be opened in the new window. */
+            url: string;
         }
 
-        export interface WebNavigationParentedCallbackDetails extends WebNavigationFramedCallbackDetails {
+        export interface WebNavigationTransitionCallbackDetails extends WebNavigationBaseCallbackDetails {
             /**
-             * ID of frame that wraps the frame. Set to -1 of no parent frame exists.
-             * @since Chrome 24
+             * A UUID of the document loaded.
+             * @since Chrome 106
              */
-            parentFrameId: number;
-        }
-
-        export interface WebNavigationTransitionCallbackDetails extends WebNavigationFramedCallbackDetails {
-            /**
-             * Cause of the navigation.
-             * One of: "link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", or "keyword_generated"
-             */
-            transitionType: string;
-            /**
-             * A list of transition qualifiers.
-             * Each element one of: "client_redirect", "server_redirect", "forward_back", or "from_address_bar"
-             */
-            transitionQualifiers: string[];
+            documentId: string;
+            /** Cause of the navigation. */
+            transitionType: `${TransitionType}`;
+            /** A list of transition qualifiers.*/
+            transitionQualifiers: `${TransitionQualifier}`[];
         }
 
         export interface WebNavigationEventFilter {
@@ -12691,89 +12884,72 @@ declare namespace chrome {
             url: chrome.events.UrlFilter[];
         }
 
-        export interface WebNavigationEvent<T extends WebNavigationCallbackDetails>
-            extends chrome.events.Event<(details: T) => void>
+        interface WebNavigationEvent<T extends (...args: any) => void>
+            extends Omit<chrome.events.Event<T>, "addListener">
         {
-            addListener(callback: (details: T) => void, filters?: WebNavigationEventFilter): void;
+            addListener(callback: T, filters?: WebNavigationEventFilter): void;
         }
-
-        export interface WebNavigationFramedEvent extends WebNavigationEvent<WebNavigationFramedCallbackDetails> {}
-
-        export interface WebNavigationFramedErrorEvent
-            extends WebNavigationEvent<WebNavigationFramedErrorCallbackDetails>
-        {}
-
-        export interface WebNavigationSourceEvent extends WebNavigationEvent<WebNavigationSourceCallbackDetails> {}
-
-        export interface WebNavigationParentedEvent extends WebNavigationEvent<WebNavigationParentedCallbackDetails> {}
-
-        export interface WebNavigationTransitionalEvent
-            extends WebNavigationEvent<WebNavigationTransitionCallbackDetails>
-        {}
-
-        export interface WebNavigationReplacementEvent
-            extends WebNavigationEvent<WebNavigationReplacementCallbackDetails>
-        {}
 
         /**
          * Retrieves information about the given frame. A frame refers to an <iframe> or a <frame> of a web page and is identified by a tab ID and a frame ID.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 93.
          * @param details Information about the frame to retrieve information about.
-         * @param callback
-         * Optional parameter details: Information about the requested frame, null if the specified frame ID and/or tab ID are invalid.
          */
+        export function getFrame(
+            details: GetFrameDetails,
+        ): Promise<GetFrameResultDetails | null>;
         export function getFrame(
             details: GetFrameDetails,
             callback: (details: GetFrameResultDetails | null) => void,
         ): void;
-        /**
-         * Retrieves information about the given frame. A frame refers to an <iframe> or a <frame> of a web page and is identified by a tab ID and a frame ID.
-         * @param details Information about the frame to retrieve information about.
-         * @return The getFrame method provides its result via callback or returned as a Promise (MV3 only).
-         */
-        export function getFrame(details: GetFrameDetails): Promise<GetFrameResultDetails | null>;
 
         /**
          * Retrieves information about all frames of a given tab.
+         *
+         * Can return its result via Promise in Manifest V3 or later since Chrome 93.
          * @param details Information about the tab to retrieve all frames from.
-         * @param callback
-         * Optional parameter details: A list of frames in the given tab, null if the specified tab ID is invalid.
-         */
-        export function getAllFrames(
-            details: GetAllFrameDetails,
-            callback: (details: GetAllFrameResultDetails[] | null) => void,
-        ): void;
-        /**
-         * Retrieves information about all frames of a given tab.
-         * @param details Information about the tab to retrieve all frames from.
-         * @return The getAllFrames method provides its result via callback or returned as a Promise (MV3 only).
          */
         export function getAllFrames(
             details: GetAllFrameDetails,
         ): Promise<GetAllFrameResultDetails[] | null>;
+        export function getAllFrames(
+            details: GetAllFrameDetails,
+            callback: (details: GetAllFrameResultDetails[] | null) => void,
+        ): void;
+
         /** Fired when the reference fragment of a frame was updated. All future events for that frame will use the updated URL. */
-        export var onReferenceFragmentUpdated: WebNavigationTransitionalEvent;
+        export const onReferenceFragmentUpdated: WebNavigationEvent<
+            (details: WebNavigationTransitionCallbackDetails) => void
+        >;
+
         /** Fired when a document, including the resources it refers to, is completely loaded and initialized. */
-        export var onCompleted: WebNavigationFramedEvent;
-        /**
-         * Fired when the frame's history was updated to a new URL. All future events for that frame will use the updated URL.
-         * @since Chrome 22
-         */
-        export var onHistoryStateUpdated: WebNavigationTransitionalEvent;
+        export const onCompleted: WebNavigationEvent<(details: WebNavigationFramedCallbackDetails) => void>;
+
+        // /** Fired when the frame's history was updated to a new URL. All future events for that frame will use the updated URL. */
+        export const onHistoryStateUpdated: WebNavigationEvent<
+            (details: WebNavigationTransitionCallbackDetails) => void
+        >;
+
         /** Fired when a new window, or a new tab in an existing window, is created to host a navigation. */
-        export var onCreatedNavigationTarget: WebNavigationSourceEvent;
-        /**
-         * Fired when the contents of the tab is replaced by a different (usually previously pre-rendered) tab.
-         * @since Chrome 22
-         */
-        export var onTabReplaced: WebNavigationReplacementEvent;
+        export const onCreatedNavigationTarget: WebNavigationEvent<
+            (details: WebNavigationSourceCallbackDetails) => void
+        >;
+
+        /** Fired when the contents of the tab is replaced by a different (usually previously pre-rendered) tab*/
+        export const onTabReplaced: events.Event<(details: WebNavigationReplacementCallbackDetails) => void>;
+
         /** Fired when a navigation is about to occur. */
-        export var onBeforeNavigate: WebNavigationParentedEvent;
+        export const onBeforeNavigate: WebNavigationEvent<(details: WebNavigationBaseCallbackDetails) => void>;
+
         /** Fired when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document. */
-        export var onCommitted: WebNavigationTransitionalEvent;
+        export const onCommitted: WebNavigationEvent<(details: WebNavigationTransitionCallbackDetails) => void>;
+
         /** Fired when the page's DOM is fully constructed, but the referenced resources may not finish loading. */
-        export var onDOMContentLoaded: WebNavigationFramedEvent;
+        export const onDOMContentLoaded: WebNavigationEvent<(details: WebNavigationFramedCallbackDetails) => void>;
+
         /** Fired when an error occurs and the navigation is aborted. This can happen if either a network error occurred, or the user aborted the navigation. */
-        export var onErrorOccurred: WebNavigationFramedErrorEvent;
+        export const onErrorOccurred: WebNavigationEvent<(details: WebNavigationFramedErrorCallbackDetails) => void>;
     }
 
     ////////////////////
@@ -13594,7 +13770,7 @@ declare namespace chrome {
          * @since Chrome 86
          */
         export enum HeaderOperation {
-            /** Adds a new entry for the specified header. This operation is not supported for request headers. */
+            /** Adds a new entry for the specified header. When modifying the headers of a request, this operation is only supported for specific headers. */
             APPEND = "append",
             /** Sets a new value for the specified header, removing any existing headers with the same name. */
             SET = "set",
@@ -13787,7 +13963,7 @@ declare namespace chrome {
             requestMethods?: `${RequestMethod}`[] | undefined;
 
             /**
-             * List of {@link tabs.Tab.id} which the rule should not match.
+             * List of {@link tabs.Tab.id} which the rule should match.
              * An ID of {@link tabs.TAB_ID_NONE} matches requests which don't originate from a tab.
              * An empty list is not allowed. Only supported for session-scoped rules.
              * @since Chrome 92
@@ -14224,6 +14400,21 @@ declare namespace chrome {
      * @since Chrome 114, MV3
      */
     export namespace sidePanel {
+        /** @since Chrome 141 */
+        export type CloseOptions =
+            | {
+                /** The tab in which to close the side panel. If a tab-specific side panel is open in the specified tab, it will be closed for that tab. At least one of this or `windowId` must be provided.  */
+                tabId: number;
+                /** The window in which to close the side panel. If a global side panel is open in the specified window, it will be closed for all tabs in that window where no tab-specific panel is active. At least one of this or `tabId` must be provided. */
+                windowId?: number | undefined;
+            }
+            | {
+                /** The tab in which to close the side panel. If a tab-specific side panel is open in the specified tab, it will be closed for that tab. At least one of this or `windowId` must be provided.  */
+                tabId?: number | undefined;
+                /** The window in which to close the side panel. If a global side panel is open in the specified window, it will be closed for all tabs in that window where no tab-specific panel is active. At least one of this or `tabId` must be provided. */
+                windowId: number;
+            };
+
         export interface GetPanelOptions {
             /**
              * If specified, the side panel options for the given tab will be returned.
@@ -14261,9 +14452,29 @@ declare namespace chrome {
             openPanelOnActionClick?: boolean | undefined;
         }
 
+        /** @since Chrome 142 */
+        export interface PanelClosedInfo {
+            /** The path of the local resource within the extension package whose content is displayed in the panel. */
+            path: string;
+            /** The optional ID of the tab where the side panel was closed. This is provided only when the panel is tab-specific. */
+            tabId?: number;
+            /** The ID of the window where the side panel was closed. This is available for both global and tab-specific panels. */
+            windowId: number;
+        }
+
         /** @since Chrome 140 */
         export interface PanelLayout {
             side: `${Side}`;
+        }
+
+        /** @since Chrome 141 */
+        export interface PanelOpenedInfo {
+            /** The path of the local resource within the extension package whose content is displayed in the panel. */
+            path: string;
+            /** The optional ID of the tab where the side panel is opened. This is provided only when the panel is tab-specific. */
+            tabId?: number;
+            /** The ID of the window where the side panel is opened. This is available for both global and tab-specific panels. */
+            windowId: number;
         }
 
         export interface PanelOptions {
@@ -14344,6 +14555,12 @@ declare namespace chrome {
          */
         export function setPanelBehavior(behavior: PanelBehavior): Promise<void>;
         export function setPanelBehavior(behavior: PanelBehavior, callback: () => void): void;
+
+        /**
+         * Fired when the extension's side panel is opened.
+         * @since Chrome 141
+         */
+        const onOpened: events.Event<(info: PanelOpenedInfo) => void>;
     }
 
     ////////////////////
@@ -14356,133 +14573,165 @@ declare namespace chrome {
      * @since Chrome 120, MV3
      */
     export namespace userScripts {
-        /**
-         * Execution environment for a user script.
-         */
-        export type ExecutionWorld = "MAIN" | "USER_SCRIPT";
+        /** The JavaScript world for a user script to execute within. */
+        export enum ExecutionWorld {
+            /** Specifies the execution environment of the DOM, which is the execution environment shared with the host page's JavaScript. */
+            MAIN = "MAIN",
+            /** Specifies the execution environment that is specific to user scripts and is exempt from the page's CSP. */
+            USER_SCRIPT = "USER_SCRIPT",
+        }
 
         /** @since Chrome 135 */
-        export interface InjectionResult {
-            /** The document associated with the injection. */
-            documentId: string;
-            /** The error, if any. `error` and `result` are mutually exclusive. */
-            error?: string;
-            /** The frame associated with the injection. */
-            frameId: number;
-            /** The result of the script execution. */
-            result: any;
-        }
+        export type InjectionResult<T = unknown> =
+            & {
+                /** The document associated with the injection. */
+                documentId: string;
+                /** The frame associated with the injection. */
+                frameId: number;
+            }
+            & (
+                | {
+                    /** The error, if any */
+                    error?: never;
+                    /** The result of the script execution. */
+                    result: T;
+                }
+                | {
+                    /** The error, if any */
+                    error: string;
+                    /** The result of the script execution. */
+                    result?: never;
+                }
+            );
 
         export interface WorldProperties {
             /** Specifies the world csp. The default is the `ISOLATED` world csp. */
-            csp?: string;
-            /** Specifies whether messaging APIs are exposed. The default is false.*/
-            messaging?: boolean;
+            csp?: string | undefined;
+            /** Specifies whether messaging APIs are exposed. The default is `false`.*/
+            messaging?: boolean | undefined;
             /**
              * Specifies the ID of the specific user script world to update. If not provided, updates the properties of the default user script world. Values with leading underscores (`_`) are reserved.
              * @since Chrome 133
              */
-            worldId?: string;
+            worldId?: string | undefined;
         }
 
         export interface UserScriptFilter {
-            ids?: string[];
+            /** {@link getScripts} only returns scripts with the IDs specified in this list. */
+            ids?: string[] | undefined;
         }
 
-        /** @since Chrome 135 */
-        export interface InjectionTarget {
-            /** Whether the script should inject into all frames within the tab. Defaults to false. This must not be true if `frameIds` is specified. */
-            allFrames?: boolean;
-            /** The IDs of specific documentIds to inject into. This must not be set if `frameIds` is set. */
-            documentIds?: string[];
-            /** The IDs of specific frames to inject into. */
-            frameIds?: number[];
-            /** The ID of the tab into which to inject. */
-            tabId: number;
-        }
+        // /** @since Chrome 135 */
+        export type InjectionTarget =
+            & {
+                /** The ID of the tab into which to inject. */
+                tabId: number;
+            }
+            & (
+                | {
+                    /** Whether the script should inject into all frames within the tab. Defaults to false. */
+                    allFrames?: boolean | undefined;
+                    /** The IDs of specific documentIds to inject into. */
+                    documentIds?: never;
+                    /** The IDs of specific frames to inject into. */
+                    frameIds?: never;
+                }
+                | {
+                    /** Whether the script should inject into all frames within the tab. Defaults to false. */
+                    allFrames?: false | undefined;
+                    /** The IDs of specific documentIds to inject into. */
+                    documentIds?: never;
+                    /** The IDs of specific frames to inject into. */
+                    frameIds: number[] | undefined;
+                }
+                | {
+                    /** Whether the script should inject into all frames within the tab. Defaults to false. */
+                    allFrames?: false | undefined;
+                    /** The IDs of specific documentIds to inject into. */
+                    documentIds?: string[] | undefined;
+                    /** The IDs of specific frames to inject into. */
+                    frameIds?: never;
+                }
+            );
 
         export interface RegisteredUserScript {
             /** If true, it will inject into all frames, even if the frame is not the top-most frame in the tab. Each frame is checked independently for URL requirements; it will not inject into child frames if the URL requirements are not met. Defaults to false, meaning that only the top frame is matched. */
-            allFrames?: boolean;
+            allFrames?: boolean | undefined;
             /** Specifies wildcard patterns for pages this user script will NOT be injected into. */
-            excludeGlobs?: string[];
+            excludeGlobs?: string[] | undefined;
             /**Excludes pages that this user script would otherwise be injected into. See Match Patterns for more details on the syntax of these strings. */
-            excludeMatches?: string[];
+            excludeMatches?: string[] | undefined;
             /** The ID of the user script specified in the API call. This property must not start with a '_' as it's reserved as a prefix for generated script IDs. */
             id: string;
             /** Specifies wildcard patterns for pages this user script will be injected into. */
-            includeGlobs?: string[];
+            includeGlobs?: string[] | undefined;
             /** The list of ScriptSource objects defining sources of scripts to be injected into matching pages. This property must be specified for {@link register}, and when specified it must be a non-empty array.*/
             js: ScriptSource[];
-            /** Specifies which pages this user script will be injected into. See Match Patterns for more details on the syntax of these strings. This property must be specified for ${ref:register}. */
-            matches?: string[];
-            /** Specifies when JavaScript files are injected into the web page. The preferred and default value is document_idle */
-            runAt?: extensionTypes.RunAt;
+            /** Specifies which pages this user script will be injected into. See Match Patterns for more details on the syntax of these strings. This property must be specified for {@link register}. */
+            matches?: string[] | undefined;
+            /** Specifies when JavaScript files are injected into the web page. The preferred and default value is `document_idle` */
+            runAt?: extensionTypes.RunAt | undefined;
             /** The JavaScript execution environment to run the script in. The default is `USER_SCRIPT` */
-            world?: ExecutionWorld;
+            world?: `${ExecutionWorld}` | undefined;
             /**
              * Specifies the user script world ID to execute in. If omitted, the script will execute in the default user script world. Only valid if `world` is omitted or is `USER_SCRIPT`. Values with leading underscores (`_`) are reserved.
              * @since Chrome 133
              */
-            worldId?: string;
+            worldId?: string | undefined;
         }
 
         /** @since Chrome 135 */
         export interface UserScriptInjection {
             /** Whether the injection should be triggered in the target as soon as possible. Note that this is not a guarantee that injection will occur prior to page load, as the page may have already loaded by the time the script reaches the target. */
-            injectImmediately?: boolean;
+            injectImmediately?: boolean | undefined;
             /** The list of ScriptSource objects defining sources of scripts to be injected into the target. */
-            js: ScriptSource[];
+            js: [ScriptSource, ...ScriptSource[]];
             /** Details specifying the target into which to inject the script. */
             target: InjectionTarget;
             /** The JavaScript "world" to run the script in. The default is `USER_SCRIPT`. */
-            world?: ExecutionWorld;
+            world?: `${ExecutionWorld}` | undefined;
             /** Specifies the user script world ID to execute in. If omitted, the script will execute in the default user script world. Only valid if `world` is omitted or is `USER_SCRIPT`. Values with leading underscores (`_`) are reserved. */
-            worldId?: string;
+            worldId?: string | undefined;
         }
 
-        /**
-         * Properties for a script source.
-         */
-        export interface ScriptSource {
-            /** A string containing the JavaScript code to inject. Exactly one of file or code must be specified. */
-            code?: string;
-            /** The path of the JavaScript file to inject relative to the extension's root directory. Exactly one of file or code must be specified. */
-            file?: string;
-        }
+        export type ScriptSource = {
+            /** A string containing the JavaScript code to inject. */
+            code: string;
+            /** The path of the JavaScript file to inject relative to the extension's root directory. */
+            file?: undefined;
+        } | {
+            /** A string containing the JavaScript code to inject. */
+            code?: undefined;
+            /** The path of the JavaScript file to inject relative to the extension's root directory. */
+            file: string;
+        };
 
         /**
          * Configures the `USER_SCRIPT` execution environment.
          *
-         * @param properties - Contains the user script world configuration.
-         * @returns A Promise that resolves with the same type that is passed to the callback.
+         * Can return its result via Promise.
+         * @param properties Contains the user script world configuration.
          */
         export function configureWorld(properties: WorldProperties): Promise<void>;
-        /**
-         * Configures the `USER_SCRIPT` execution environment.
-         *
-         * @param properties - Contains the user script world configuration.
-         * @param callback - Callback function to be executed after configuring the world.
-         */
         export function configureWorld(properties: WorldProperties, callback: () => void): void;
 
         /**
          * Returns all dynamically-registered user scripts for this extension.
          *
-         * @param filter - If specified, this method returns only the user scripts that match it.
-         * @returns A Promise that resolves with the same type that is passed to the callback.
+         * Can return its result via Promise.
+         * @param filter If specified, this method returns only the user scripts that match it.
          */
         export function getScripts(filter?: UserScriptFilter): Promise<RegisteredUserScript[]>;
-        /**
-         * Returns all dynamically-registered user scripts for this extension.
-         *
-         * @param filter - If specified, this method returns only the user scripts that match it.
-         * @param callback - Callback function to be executed after getting user scripts.
-         */
-        export function getScripts(filter: UserScriptFilter, callback: (scripts: RegisteredUserScript[]) => void): void;
+        export function getScripts(callback: (scripts: RegisteredUserScript[]) => void): void;
+        export function getScripts(
+            filter: UserScriptFilter | undefined,
+            callback: (scripts: RegisteredUserScript[]) => void,
+        ): void;
 
         /**
          * Retrieves all registered world configurations.
+         *
+         * Can return its result via Promise.
          * @since Chrome 133
          */
         export function getWorldConfigurations(): Promise<WorldProperties[]>;
@@ -14490,24 +14739,23 @@ declare namespace chrome {
 
         /**
          * Injects a script into a target context. By default, the script will be run at `document_idle`, or immediately if the page has already loaded. If the `injectImmediately` property is set, the script will inject without waiting, even if the page has not finished loading. If the script evaluates to a promise, the browser will wait for the promise to settle and return the resulting value.
+         *
+         * Can return its result via Promise.
          * @since Chrome 135
          */
-        export function execute(injection: UserScriptInjection): Promise<InjectionResult[]>;
-        export function execute(injection: UserScriptInjection, callback: (result: InjectionResult[]) => void): void;
+        export function execute<T>(injection: UserScriptInjection): Promise<InjectionResult<T>[]>;
+        export function execute<T>(
+            injection: UserScriptInjection,
+            callback: (result: InjectionResult<T>[]) => void,
+        ): void;
 
         /**
          * Registers one or more user scripts for this extension.
          *
+         * Can return its result via Promise.
          * @param scripts - Contains a list of user scripts to be registered.
-         * @returns A Promise that resolves with the same type that is passed to the callback.
          */
         export function register(scripts: RegisteredUserScript[]): Promise<void>;
-        /**
-         * Registers one or more user scripts for this extension.
-         *
-         * @param scripts - Contains a list of user scripts to be registered.
-         * @param callback - Callback function to be executed after registering user scripts.
-         */
         export function register(scripts: RegisteredUserScript[], callback: () => void): void;
 
         /**
@@ -14515,41 +14763,26 @@ declare namespace chrome {
          * @param worldId The ID of the user script world to reset. If omitted, resets the default world's configuration.
          */
         export function resetWorldConfiguration(worldId?: string): Promise<void>;
-        export function resetWorldConfiguration(worldId: string, callback: () => void): void;
         export function resetWorldConfiguration(callback: () => void): void;
+        export function resetWorldConfiguration(worldId: string | undefined, callback: () => void): void;
 
         /**
          * Unregisters all dynamically-registered user scripts for this extension.
          *
-         * @param filter - If specified, this method unregisters only the user scripts that match it.
-         * @returns A Promise that resolves with the same type that is passed to the callback.
+         * Can return its result via Promise.
+         * @param filter If specified, this method unregisters only the user scripts that match it.
          */
         export function unregister(filter?: UserScriptFilter): Promise<void>;
-        /**
-         * Unregisters all dynamically-registered user scripts for this extension.
-         *
-         * @param filter - If specified, this method unregisters only the user scripts that match it.
-         * @param callback - Callback function to be executed after unregistering user scripts.
-         */
-        export function unregister(filter: UserScriptFilter, callback: () => void): void;
+        export function unregister(callback: () => void): void;
+        export function unregister(filter: UserScriptFilter | undefined, callback: () => void): void;
 
         /**
          * Updates one or more user scripts for this extension.
          *
-         * @param scripts - Contains a list of user scripts to be updated. A property is only updated for the existing script
-         *                  if it is specified in this object. If there are errors during script parsing/file validation, or if
-         *                  the IDs specified do not correspond to a fully registered script, then no scripts are updated.
-         * @returns A Promise that resolves with the same type that is passed to the callback.
+         * Can return its result via Promise.
+         * @param scripts Contains a list of user scripts to be updated. A property is only updated for the existing script if it is specified in this object. If there are errors during script parsing/file validation, or if the IDs specified do not correspond to a fully registered script, then no scripts are updated.
          */
         export function update(scripts: RegisteredUserScript[]): Promise<void>;
-        /**
-         * Updates one or more user scripts for this extension.
-         *
-         * @param scripts - Contains a list of user scripts to be updated. A property is only updated for the existing script
-         *                  if it is specified in this object. If there are errors during script parsing/file validation, or if
-         *                  the IDs specified do not correspond to a fully registered script, then no scripts are updated.
-         * @param callback - Callback function to be executed after updating user scripts.
-         */
         export function update(scripts: RegisteredUserScript[], callback: () => void): void;
     }
 }

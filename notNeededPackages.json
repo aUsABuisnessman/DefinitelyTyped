@@ -668,6 +668,10 @@
             "libraryName": "@carbon/icons-react",
             "asOfVersion": "11.29.0"
         },
+        "carbon__pictograms-react": {
+            "libraryName": "@carbon/pictograms-react",
+            "asOfVersion": "11.89.0"
+        },
         "card-validator": {
             "libraryName": "card-validator",
             "asOfVersion": "7.0.1"
@@ -2900,6 +2904,10 @@
         "html-entities": {
             "libraryName": "html-entities",
             "asOfVersion": "1.3.2"
+        },
+        "html-minifier-next": {
+            "libraryName": "html-minifier-next",
+            "asOfVersion": "4.1.0"
         },
         "html-tag-names": {
             "libraryName": "html-tag-names",
