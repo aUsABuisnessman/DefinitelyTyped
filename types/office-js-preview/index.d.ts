@@ -250,9 +250,14 @@ declare namespace Office {
      */
     const devicePermission: DevicePermission;
     /**
+     * Provides options to manage the user interface of an Office Add-in while the add-in is running.
+     */
+    const extensionLifeCycle: ExtensionLifeCycle;
+    /**
      * Represents the ribbon associated with the Office application.
      */
     const ribbon: Ribbon;
+
     /**
      * Occurs when the runtime environment is loaded and the add-in is ready to start interacting with the application and hosted document.
      *
@@ -4625,12 +4630,6 @@ declare namespace Office {
      *  </table>
      */
     interface Context {
-        /**
-         * Provides information and access to the signed-in user.
-         *
-         * @beta
-         */
-        auth: Auth;
         /**
          * True, if the current platform allows the add-in to display a UI for selling or upgrading; otherwise returns False.
          *
@@ -14782,6 +14781,8 @@ declare namespace Office {
          * **{@link https://learn.microsoft.com/office/dev/add-ins/outlook/understanding-outlook-add-in-permissions | Minimum permission level}**: **read/write item**
          *
          * **{@link https://learn.microsoft.com/office/dev/add-ins/outlook/outlook-add-ins-overview#extension-points | Applicable Outlook mode}**: Message Read
+         *
+         * **Important**: Attachments of type `MailboxEnums.AttachmentType.Item` aren't currently supported.
          *
          * @beta
          */
@@ -40135,6 +40136,7 @@ declare namespace Excel {
         readonly calculationEngineVersion: number;
         /**
          * Returns the calculation mode used in the workbook, as defined by the constants in `Excel.CalculationMode`. Possible values are: `Automatic`, where Excel controls recalculation; `AutomaticExceptTables`, where Excel controls recalculation but ignores changes in tables; `Manual`, where calculation is done when the user requests it.
+         * This is a runtime property. The `calculationMode` setting is not persisted in the workbook.
          *
          * @remarks
          * [Api set: ExcelApi 1.1 for get, 1.8 for set]
@@ -40808,13 +40810,12 @@ declare namespace Excel {
          * Inserts the specified worksheets from a source workbook into the current workbook.
                     
                      The `extensionHardening` Windows registry key affects this API. The file extension defined by the `base64File` param must match the real file type of the inserted file. If `extensionHardening` is set to deny mismatches and the file extension does not match the real file type, this API throws the following error: "This operation is not allowed due to the extension hardening policy."
-                     
-                     **Note**: This API is currently only supported for Office on Windows, Mac, and the web.
          *
          * @remarks
          * [Api set: ExcelApi 1.13]
          * 
          * This API is currently only supported for Office on Windows, Mac, and the web.
+         * In Excel on the web, this API doesn't support inserting charts, comments, PivotTables, or slicers.
          *
          * @param base64File Required. The Base64-encoded string representing the source workbook file.
          * @param options Optional. The options that define which worksheets to insert and where in the workbook the new worksheets will be inserted. By default, all the worksheets from the source workbook are inserted at the end of the current workbook.
@@ -41282,6 +41283,7 @@ declare namespace Excel {
         evaluate(name: string): OfficeExtension.ClientResult<any>;
         /**
          * Finds all occurrences of the given string based on the criteria specified and returns them as a `RangeAreas` object, comprising one or more rectangular ranges.
+         * Content in hidden worksheets is not returned.
          *
          * @remarks
          * [Api set: ExcelApi 1.9]
@@ -41293,6 +41295,7 @@ declare namespace Excel {
         findAll(text: string, criteria: Excel.WorksheetSearchCriteria): Excel.RangeAreas;
         /**
          * Finds all occurrences of the given string based on the criteria specified and returns them as a `RangeAreas` object, comprising one or more rectangular ranges.
+         * Content in hidden worksheets is not returned.
          *
          * @remarks
          * [Api set: ExcelApi 1.9]
@@ -74567,6 +74570,7 @@ declare namespace Excel {
             iterativeCalculation?: Excel.Interfaces.IterativeCalculationUpdateData;
             /**
              * Returns the calculation mode used in the workbook, as defined by the constants in `Excel.CalculationMode`. Possible values are: `Automatic`, where Excel controls recalculation; `AutomaticExceptTables`, where Excel controls recalculation but ignores changes in tables; `Manual`, where calculation is done when the user requests it.
+             * This is a runtime property. The `calculationMode` setting is not persisted in the workbook.
              *
              * @remarks
              * [Api set: ExcelApi 1.1 for get, 1.8 for set]
@@ -80445,6 +80449,7 @@ declare namespace Excel {
             calculationEngineVersion?: number;
             /**
              * Returns the calculation mode used in the workbook, as defined by the constants in `Excel.CalculationMode`. Possible values are: `Automatic`, where Excel controls recalculation; `AutomaticExceptTables`, where Excel controls recalculation but ignores changes in tables; `Manual`, where calculation is done when the user requests it.
+             * This is a runtime property. The `calculationMode` setting is not persisted in the workbook.
              *
              * @remarks
              * [Api set: ExcelApi 1.1 for get, 1.8 for set]
@@ -88613,6 +88618,7 @@ declare namespace Excel {
             calculationEngineVersion?: boolean;
             /**
              * Returns the calculation mode used in the workbook, as defined by the constants in `Excel.CalculationMode`. Possible values are: `Automatic`, where Excel controls recalculation; `AutomaticExceptTables`, where Excel controls recalculation but ignores changes in tables; `Manual`, where calculation is done when the user requests it.
+             * This is a runtime property. The `calculationMode` setting is not persisted in the workbook.
              *
              * @remarks
              * [Api set: ExcelApi 1.1 for get, 1.8 for set]
@@ -187603,6 +187609,18 @@ declare namespace PowerPoint {
             expand?: string;
         }): PowerPoint.Presentation;
         /**
+         * Occurs when the selection of slides in the presentation changes.
+                    This event is raised when the user selects a different slide or changes the selection of slides.
+                    This event is not raised when the selection of the contents (for example, shapes) in the slide changes.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         *
+         * @eventproperty
+         * @beta
+         */
+        readonly onSlideSelectionChanged: OfficeExtension.EventHandlers<PowerPoint.SlideSelectionChangedEventArgs>;
+        /**
         * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
         * Whereas the original `PowerPoint.Presentation` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.PresentationData`) that contains shallow copies of any loaded child properties from the original object.
         */
@@ -187615,6 +187633,15 @@ declare namespace PowerPoint {
      * [Api set: PowerPointApi 1.3]
      */
     interface AddSlideOptions {
+        /**
+         * Specifies the 0-based index at which the new slide should be inserted.
+                    If not specified or if the specified index is out of bounds, the new slide will be added at the end of the presentation.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        index?: number;
         /**
          * Specifies the ID of a Slide Layout to be used for the new slide.
                     If no `layoutId` is provided, but a `slideMasterId` is provided, then the ID of the first layout from the specified Slide Master will be used.
@@ -187970,6 +187997,52 @@ declare namespace PowerPoint {
         * Whereas the original `PowerPoint.CustomXmlPartCollection` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.CustomXmlPartCollectionData`) that contains an "items" array with shallow copies of any loaded properties from the collection's items.
         */
         toJSON(): PowerPoint.Interfaces.CustomXmlPartCollectionData;
+    }
+    /**
+     * Represents a graphic object in PowerPoint.
+     *
+     * @remarks
+     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    class Graphic extends OfficeExtension.ClientObject {
+        /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
+        context: RequestContext;
+        /**
+         * Returns the `Shape` object associated with the graphic.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        readonly shape: PowerPoint.Shape;
+        convertToShape(): PowerPoint.ShapeScopedCollection;
+        /**
+         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
+         *
+         * @param options Provides options for which properties of the object to load.
+         */
+        load(options?: PowerPoint.Interfaces.GraphicLoadOptions): PowerPoint.Graphic;
+        /**
+         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
+         *
+         * @param propertyNames A comma-delimited string or an array of strings that specify the properties to load.
+         */
+        load(propertyNames?: string | string[]): PowerPoint.Graphic;
+        /**
+         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
+         *
+         * @param propertyNamesAndPaths `propertyNamesAndPaths.select` is a comma-delimited string that specifies the properties to load, and `propertyNamesAndPaths.expand` is a comma-delimited string that specifies the navigation properties to load.
+         */
+        load(propertyNamesAndPaths?: {
+            select?: string;
+            expand?: string;
+        }): PowerPoint.Graphic;
+        /**
+        * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
+        * Whereas the original `PowerPoint.Graphic` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.GraphicData`) that contains shallow copies of any loaded child properties from the original object.
+        */
+        toJSON(): PowerPoint.Interfaces.GraphicData;
     }
     /**
      * Represents the available options when adding a {@link PowerPoint.Hyperlink}.
@@ -190654,6 +190727,53 @@ declare namespace PowerPoint {
         chartPlus = "ChartPlus",
     }
     /**
+     * Represents the available options when adding a picture (represented by a {@link PowerPoint.Shape} object).
+     *
+     * @remarks
+     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    interface PictureAddOptions {
+        /**
+         * Specifies the height, in points, of the picture.
+                    When not provided, the default value is 72 points (1 inch).
+                    Throws an `InvalidArgument` exception when set with a negative value.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        height?: number;
+        /**
+         * Specifies the distance, in points, from the left side of the picture to the left side of the slide.
+                    When not provided, the default value is 0.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        left?: number;
+        /**
+         * Specifies the distance, in points, from the top edge of the picture to the top edge of the slide.
+                    When not provided, the default value is 0.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        top?: number;
+        /**
+         * Specifies the width, in points, of the picture.
+                    When not provided, the default value is 72 points (1 inch).
+                    Throws an `InvalidArgument` exception when set with a negative value.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        width?: number;
+    }
+    /**
      * Represents the available options when adding shapes.
      *
      * @remarks
@@ -192868,6 +192988,18 @@ declare namespace PowerPoint {
          */
         addLine(connectorType?: "Straight" | "Elbow" | "Curve", options?: PowerPoint.ShapeAddOptions): PowerPoint.Shape;
         /**
+         * Adds a picture to the slide. Returns a `Shape` object that represents the new picture.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         *
+         * @param base64EncodedImage The base64-encoded image data.
+         * @param options Optional. Additional options such as the position of the picture.
+         * @returns The newly inserted shape.
+         */
+        addPicture(base64EncodedImage: string, options?: PowerPoint.PictureAddOptions): PowerPoint.Shape;
+        /**
          * Adds a table to the slide. Returns a `Shape` object that represents the new table.
                     Use the `Shape.table` property to get the `Table` object for the shape.
          *
@@ -194362,6 +194494,15 @@ declare namespace PowerPoint {
          */
         readonly type: PowerPoint.SlideLayoutType | "Blank" | "Chart" | "ChartAndText" | "ClipArtAndText" | "ClipArtAndVerticalText" | "Comparison" | "ContentWithCaption" | "Custom" | "FourObjects" | "LargeObject" | "MediaClipAndText" | "Mixed" | "Object" | "ObjectAndText" | "ObjectAndTwoObjects" | "ObjectOverText" | "OrganizationChart" | "PictureWithCaption" | "SectionHeader" | "Table" | "Text" | "TextAndChart" | "TextAndClipArt" | "TextAndMediaClip" | "TextAndObject" | "TextAndTwoObjects" | "TextOverObject" | "Title" | "TitleOnly" | "TwoColumnText" | "TwoObjects" | "TwoObjectsAndObject" | "TwoObjectsAndText" | "TwoObjectsOverText" | "VerticalText" | "VerticalTitleAndText" | "VerticalTitleAndTextOverChart";
         /**
+         * Deletes the slide layout from the presentation. Does nothing if the slide layout doesn't exist.
+                    Throws the `GeneralException` error if the slide layout is in use.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        delete(): void;
+        /**
          * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
          *
          * @param options Provides options for which properties of the object to load.
@@ -194563,6 +194704,15 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi 1.3]
          */
         readonly name: string;
+        /**
+         * Deletes the slide master and all child layouts from the presentation. Does nothing if the slide master doesn't exist.
+                    Throws the `GeneralException` error if the slide master is in use.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        delete(): void;
         /**
          * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
          *
@@ -195447,6 +195597,14 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi 1.3]
          */
         delete(): void;
+        /**
+         * Returns a {@link PowerPoint.Graphic} object if this shape is a {@link PowerPoint.ShapeType| ShapeType.graphic}. If this shape isn't a `Graphic`, an object with an `isNullObject` property set to `true` is returned. For further information, see {@link https://learn.microsoft.com/office/dev/add-ins/develop/application-specific-api-model#ornullobject-methods-and-properties | *OrNullObject methods and properties}.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        getGraphicOrNullObject(): PowerPoint.Graphic;
         /**
          * Renders an image of the shape.
          *
@@ -196340,6 +196498,23 @@ declare namespace PowerPoint {
         * Whereas the original `PowerPoint.SlideScopedCollection` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.SlideScopedCollectionData`) that contains an "items" array with shallow copies of any loaded properties from the collection's items.
         */
         toJSON(): PowerPoint.Interfaces.SlideScopedCollectionData;
+    }
+    /**
+     * Provides information about the slide selection changed event.
+     *
+     * @remarks
+     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    interface SlideSelectionChangedEventArgs {
+        /**
+         * Gets the array of IDs of the currently selected slides.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        slideIds: string[];
     }
     /**
      * Represents the collection of Slide Masters in the presentation.
@@ -197338,6 +197513,9 @@ declare namespace PowerPoint {
         /** An interface describing the data returned by calling `customXmlPartCollection.toJSON()`. */
         interface CustomXmlPartCollectionData {
             items?: PowerPoint.Interfaces.CustomXmlPartData[];
+        }
+        /** An interface describing the data returned by calling `graphic.toJSON()`. */
+        interface GraphicData {
         }
         /** An interface describing the data returned by calling `hyperlinkScopedCollection.toJSON()`. */
         interface HyperlinkScopedCollectionData {
@@ -198625,6 +198803,27 @@ declare namespace PowerPoint {
              * [Api set: PowerPointApi 1.7]
              */
             namespaceUri?: boolean;
+        }
+        /**
+         * Represents a graphic object in PowerPoint.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        interface GraphicLoadOptions {
+            /**
+              Specifying `$all` for the load options loads all the scalar properties (such as `Range.address`) but not the navigational properties (such as `Range.format.fill.color`).
+             */
+            $all?: boolean;
+            /**
+            * Returns the `Shape` object associated with the graphic.
+            *
+            * @remarks
+            * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+            * @beta
+            */
+            shape?: PowerPoint.Interfaces.ShapeLoadOptions;
         }
         /**
          * Represents a scoped collection of hyperlinks.
